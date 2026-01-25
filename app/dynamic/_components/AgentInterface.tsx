@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useAgentInteraction } from '../_hooks/useAgentInteraction';
 import { ThreeJSVisualizer } from './ThreeJSVisualizer';
 import { Flashcard } from './Flashcard';
@@ -45,6 +45,29 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
         setInputText('');
     };
 
+    const memoizedMessages = useMemo(() => {
+        return messages.map((msg) => (
+            <div
+                key={msg.id}
+                className={`flex w-full ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+                {msg.type === 'flashcard' && msg.cardData ? (
+                    console.log(msg.cardData),
+                    <Flashcard {...msg.cardData} />
+                ) : (
+                    <div
+                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ring-1 ring-inset backdrop-blur-md transition-all sm:max-w-[75%] sm:px-5 sm:py-3.5 ${msg.sender === 'user'
+                            ? 'bg-zinc-900 text-white ring-zinc-900 rounded-br-none'
+                            : 'bg-white/80 text-zinc-800 ring-white/50 rounded-bl-none shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
+                            } ${(msg.isInterim) ? 'opacity-60 animate-pulse' : ''}`}
+                    >
+                        {msg.text}
+                    </div>
+                )}
+            </div>
+        ));
+    }, [messages]);
+
     const handleMicToggle = () => {
         if (mode === 'text') {
             setInteractionMode('voice');
@@ -77,25 +100,7 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                     )}
 
                     <div className="flex flex-col gap-6 justify-end min-h-full pb-4">
-                        {messages.map((msg) => (
-                            <div
-                                key={msg.id}
-                                className={`flex w-full ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                            >
-                                {msg.type === 'flashcard' && msg.cardData ? (
-                                    <Flashcard title={msg.cardData.title} value={msg.cardData.value} />
-                                ) : (
-                                    <div
-                                        className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ring-1 ring-inset backdrop-blur-md transition-all sm:max-w-[75%] sm:px-5 sm:py-3.5 ${msg.sender === 'user'
-                                            ? 'bg-zinc-900 text-white ring-zinc-900 rounded-br-none'
-                                            : 'bg-white/80 text-zinc-800 ring-white/50 rounded-bl-none shadow-[0_2px_10px_rgba(0,0,0,0.03)]'
-                                            } ${(msg.isInterim) ? 'opacity-60 animate-pulse' : ''}`}
-                                    >
-                                        {msg.text}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                        {memoizedMessages}
                         <div ref={messagesEndRef} />
                     </div>
                 </div>

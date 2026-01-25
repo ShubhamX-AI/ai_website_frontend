@@ -11,6 +11,19 @@ export type AgentState = 'listening' | 'speaking' | 'thinking' | 'idle';
 export type InteractionMode = 'voice' | 'text';
 
 // Reusing the message structure/logic but simplified for this hook
+export interface FlashcardStyle {
+    accentColor?: string;
+    icon?: string;
+    theme?: 'glass' | 'solid' | 'gradient' | 'neon' | 'highlight' | 'info' | 'light';
+    size?: 'small' | 'medium' | 'large' | 'sm' | 'md' | 'lg';
+    layout?: 'default' | 'horizontal' | 'centered' | 'media-top';
+    image?: {
+        url: string;
+        alt: string;
+        aspectRatio?: string;
+    };
+}
+
 export interface ChatMessage {
     id: string;
     sender: 'user' | 'agent';
@@ -19,7 +32,7 @@ export interface ChatMessage {
     cardData?: {
         title: string;
         value: string;
-    };
+    } & FlashcardStyle;
     isInterim?: boolean;
     timestamp: number;
 }
@@ -40,6 +53,52 @@ export function useAgentInteraction() {
             localParticipant.setMicrophoneEnabled(false);
         }
     }, [localParticipant, mode]);
+
+    // UI Context Sync to Backend
+    const syncUIContext = useCallback(() => {
+        if (!localParticipant || !room || room.state !== 'connected') return;
+
+        const isMobile = window.innerWidth < 768;
+        const context = {
+            type: 'ui.context',
+            screen: isMobile ? 'mobile' : 'desktop',
+            density: isMobile ? 'compact' : 'comfortable',
+            cardSize: isMobile ? 'sm' : 'md',
+            maxChars: isMobile ? 150 : 300,
+            theme: 'light' // Defaulting to light as per page.tsx background
+        };
+
+        const encoder = new TextEncoder();
+        console.log('--- SYNCING UI CONTEXT TO BACKEND ---', context);
+        localParticipant.publishData(encoder.encode(JSON.stringify(context)), {
+            reliable: true,
+            topic: 'ui.context'
+        });
+    }, [localParticipant, room]);
+
+    useEffect(() => {
+        if (room?.state === 'connected') {
+            // Sync when agent is present
+            if (agentTrack) {
+                console.log('--- AGENT JOINED, SYNCING UI CONTEXT ---');
+                syncUIContext();
+            } else {
+                console.log('--- ROOM CONNECTED, WAITING FOR AGENT TO JOIN... ---');
+            }
+
+            // Sync on resize (debounced slightly)
+            let timeout: NodeJS.Timeout;
+            const handleResize = () => {
+                clearTimeout(timeout);
+                timeout = setTimeout(syncUIContext, 1000);
+            };
+            window.addEventListener('resize', handleResize);
+            return () => {
+                window.removeEventListener('resize', handleResize);
+                clearTimeout(timeout);
+            };
+        }
+    }, [room?.state, !!agentTrack, syncUIContext]);
 
     // Map-based logic for transcription + data messages
     const [messagesMap, setMessagesMap] = useState<Map<string, ChatMessage>>(new Map());
@@ -81,7 +140,13 @@ export function useAgentInteraction() {
                             type: 'flashcard',
                             cardData: {
                                 title: data.title || "Information",
-                                value: data.value || JSON.stringify(data)
+                                value: data.value || JSON.stringify(data),
+                                accentColor: data.accentColor,
+                                icon: data.icon,
+                                theme: data.theme,
+                                size: data.size,
+                                layout: data.layout,
+                                image: data.image
                             },
                             sender: 'agent',
                             timestamp: Date.now(),
