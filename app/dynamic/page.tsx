@@ -57,12 +57,12 @@ export default function DynamicPage() {
       </div>
 
       {/* Main Container */}
-      <div className="relative z-10 flex h-full w-full flex-col p-4 md:p-6 lg:p-8">
+      <div className="relative z-10 flex h-[100dvh] w-full flex-col p-3 pt-6 md:p-6 lg:p-8">
 
         {/* Navigation / Header */}
-        <header className="mb-6 flex items-center justify-between">
+        <header className="mb-4 flex items-center justify-between sm:mb-6">
           <div className="flex items-center gap-2">
-            <Link href="/landing" className="group flex items-center gap-2 rounded-full bg-zinc-100 py-2 pl-3 pr-4 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900">
+            <Link href="/landing" className="group flex items-center gap-2 rounded-full bg-zinc-100 py-2 pl-3 pr-4 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 sm:text-sm">
               <svg className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>

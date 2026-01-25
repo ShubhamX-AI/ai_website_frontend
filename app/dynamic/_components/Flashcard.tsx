@@ -7,7 +7,7 @@ interface FlashcardProps {
 
 export const Flashcard: React.FC<FlashcardProps> = ({ title, value }) => {
     return (
-        <div className="group relative w-full max-w-sm overflow-hidden rounded-2xl bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-zinc-100 transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+        <div className="group relative w-full overflow-hidden rounded-2xl bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-zinc-100 transition-all duration-300 sm:p-6 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
             {/* Glow effect */}
             <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-blue-500/10 blur-3xl transition-opacity duration-500 group-hover:opacity-60" />
 
