@@ -73,6 +73,8 @@ const colorMap = {
     rose: { bg: 'bg-rose-50', text: 'text-rose-600', ring: 'ring-rose-100', glow: 'bg-rose-500/10', border: 'border-rose-200' },
     violet: { bg: 'bg-violet-50', text: 'text-violet-600', ring: 'ring-violet-100', glow: 'bg-violet-500/10', border: 'border-violet-200' },
     orange: { bg: 'bg-orange-50', text: 'text-orange-600', ring: 'ring-orange-100', glow: 'bg-orange-500/10', border: 'border-orange-200' },
+    cyan: { bg: 'bg-cyan-50', text: 'text-cyan-600', ring: 'ring-cyan-100', glow: 'bg-cyan-500/10', border: 'border-cyan-200' },
+    fuchsia: { bg: 'bg-fuchsia-50', text: 'text-fuchsia-600', ring: 'ring-fuchsia-100', glow: 'bg-fuchsia-500/10', border: 'border-fuchsia-200' },
     zinc: { bg: 'bg-zinc-50', text: 'text-zinc-600', ring: 'ring-zinc-100', glow: 'bg-zinc-500/10', border: 'border-zinc-200' }
 };
 
@@ -80,6 +82,7 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
     title = "Information",
     value = "",
     accentColor,
+    icon,
     theme,
     size,
     layout = 'default',
@@ -88,37 +91,57 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
     // Intelligence: Fallback to dynamic values if backend sends undefined
     const detectedColor = (accentColor as keyof typeof colorMap) || getAccentColor(title || value);
     const colors = colorMap[detectedColor as keyof typeof colorMap] || colorMap.zinc;
-    const finalIcon = getIcon(title || value);
+    const finalIcon = icon ? getIcon(icon) : getIcon(title || value);
 
     // Normalize size and theme for mapping with smarter fallbacks
     const normalizedSize = (size === 'sm' ? 'small' : size === 'md' ? 'medium' : size === 'lg' ? 'large' : (size || 'medium')) as 'small' | 'medium' | 'large';
     const normalizedTheme = (theme === 'highlight' || theme === 'info' || theme === 'light' || !theme ? 'glass' : theme) as 'glass' | 'solid' | 'gradient' | 'neon';
 
     const themeClasses: Record<'glass' | 'solid' | 'gradient' | 'neon', string> = {
-        glass: 'bg-white/90 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.04)] ring-1 ring-white/60',
-        solid: 'bg-white shadow-[0_4px_20px_rgba(0,0,0,0.06)] ring-1 ring-zinc-100',
-        gradient: `bg-gradient-to-br from-white via-white to-${detectedColor}-50/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] ring-1 ring-zinc-100`,
-        neon: `bg-zinc-900 text-white shadow-[0_0_20px_rgba(0,0,0,0.2)] ring-1 ring-${detectedColor}-500/30`
+        glass: 'bg-white/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] ring-1 ring-white/60',
+        solid: 'bg-white shadow-[0_10px_30px_rgba(0,0,0,0.08)] ring-1 ring-zinc-100/80',
+        gradient: `bg-gradient-to-br from-white via-white to-${detectedColor}-50/40 shadow-[0_15px_40px_rgba(0,0,0,0.06)] ring-1 ring-zinc-100`,
+        neon: `bg-zinc-900 text-white shadow-[0_20px_40px_rgba(0,0,0,0.3)] ring-1 ring-${detectedColor}-500/30`
     };
 
     const sizeClasses: Record<'small' | 'medium' | 'large', string> = {
         small: 'p-4 sm:p-5',
-        medium: 'p-5 sm:p-6',
-        large: 'p-6 sm:p-8'
+        medium: 'p-6 sm:p-8',
+        large: 'p-8 sm:p-10'
     };
 
     const renderContent = (text: string) => {
         if (!text) return null;
-        return text.split('\n').filter(l => l.trim()).map((line, i) => {
+
+        // Split by lines and filter
+        const lines = text.split('\n').filter(l => l.trim());
+
+        return lines.map((line, i) => {
+            // Check for "**Label:** Value" pattern
+            const kvMatch = line.match(/^\*\*(.*?):\*\*\s*(.*)$/);
+            if (kvMatch) {
+                const [, label, val] = kvMatch;
+                return (
+                    <div key={i} className="group/kv flex flex-col gap-1 mb-4 last:mb-0 transition-all duration-300">
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${normalizedTheme === 'neon' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                            {label}
+                        </span>
+                        <span className={`text-base font-medium tracking-tight ${normalizedTheme === 'neon' ? 'text-white' : 'text-zinc-900'}`}>
+                            {val}
+                        </span>
+                    </div>
+                );
+            }
+
             let content: React.ReactNode = line;
             if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
                 content = (
-                    <li className="ml-4 list-disc pl-1 mb-1">
+                    <li className="ml-4 list-disc pl-1 mb-2">
                         {renderBold(line.trim().substring(2))}
                     </li>
                 );
             } else {
-                content = <p className="mb-2 last:mb-0">{renderBold(line)}</p>;
+                content = <p className="mb-3 last:mb-0 leading-relaxed">{renderBold(line)}</p>;
             }
             return <React.Fragment key={i}>{content}</React.Fragment>;
         });
@@ -129,7 +152,7 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
         return parts.map((part, i) => {
             if (part.startsWith('**') && part.endsWith('**')) {
                 return (
-                    <strong key={i} className="font-bold text-zinc-900 dark:text-inherit">
+                    <strong key={i} className={`font-bold ${normalizedTheme === 'neon' ? 'text-white' : 'text-zinc-900'}`}>
                         {part.slice(2, -2)}
                     </strong>
                 );
@@ -139,59 +162,71 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
     };
 
     return (
-        <div className={`group relative h-full w-full overflow-hidden rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl ${themeClasses[normalizedTheme]} ${sizeClasses[normalizedSize]}`}>
-            {/* Dynamic Glow effect */}
-            <div className={`absolute -right-20 -top-20 h-64 w-64 rounded-full ${colors.glow} blur-[80px] transition-all duration-700 group-hover:scale-125 opacity-60 group-hover:opacity-100`} />
+        <div className={`group relative h-full w-full overflow-hidden rounded-[2.5rem] transition-all duration-500 hover:scale-[1.02] hover:translate-y-[-4px] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] ${themeClasses[normalizedTheme]} ${sizeClasses[normalizedSize]}`}>
+            {/* Dynamic Ambient Background Glow */}
+            <div className={`absolute -right-32 -top-32 h-96 w-96 rounded-full ${colors.glow} blur-[100px] transition-all duration-1000 group-hover:scale-150 group-hover:opacity-100 opacity-40`} />
+            <div className={`absolute -left-32 -bottom-32 h-64 w-64 rounded-full ${colors.glow} blur-[80px] transition-all duration-1000 group-hover:scale-150 group-hover:opacity-60 opacity-20`} />
 
-            <div className={`relative z-10 flex h-full flex-col gap-4 ${layout === 'media-top' ? 'justify-start' : 'justify-between'}`}>
+            <div className={`relative z-10 flex h-full flex-col gap-6 ${layout === 'media-top' ? 'justify-start' : 'justify-between'}`}>
                 {/* Header Section */}
-                <div className={`flex items-center gap-4 ${layout === 'centered' ? 'flex-col items-center text-center' : ''}`}>
-                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${normalizedTheme === 'neon' ? `bg-${detectedColor}-500/20 text-${detectedColor}-400` : `${colors.bg} ${colors.text}`} ring-1 ${colors.ring} shadow-sm transition-all duration-500 group-hover:-rotate-12 group-hover:scale-110`}>
-                        {finalIcon}
+                <div className={`flex items-start justify-between ${layout === 'centered' ? 'flex-col items-center text-center' : ''}`}>
+                    <div className="flex flex-col gap-3">
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-[1.25rem] ${normalizedTheme === 'neon' ? `bg-gradient-to-br from-${detectedColor}-500 to-${detectedColor}-600 text-white` : `bg-gradient-to-br from-${detectedColor}-50 to-${detectedColor}-100/50 ${colors.text}`} ring-1 ${colors.ring.replace('100', '200')} shadow-xl shadow-${detectedColor}-500/10 transition-all duration-700 group-hover:rotate-[360deg] group-hover:scale-110`}>
+                            {finalIcon}
+                        </div>
+                        <div className="space-y-1">
+                            {/* <span className={`text-[9px] font-black uppercase tracking-[0.3em] ${normalizedTheme === 'neon' ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                                Data Insight
+                            </span> */}
+                            <h3 className={`text-xl font-bold tracking-tight leading-tight ${normalizedTheme === 'neon' ? 'text-white' : 'text-zinc-900'}`}>
+                                {title}
+                            </h3>
+                        </div>
                     </div>
-                    {/* <div className="flex flex-col">
-                        <span className={`text-[10px] font-bold uppercase tracking-[0.25em] ${normalizedTheme === 'neon' ? 'text-zinc-400' : 'text-zinc-400'}`}>
-                            Flashcard
-                        </span>
-                        <h3 className={`text-sm font-semibold tracking-tight ${normalizedTheme === 'neon' ? 'text-white' : 'text-zinc-900'}`}>
-                            {title}
-                        </h3>
-                    </div> */}
+
+                    {/* Status indicator */}
+                    <div className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
                 </div>
 
                 {/* Media Section */}
                 {image && (
-                    <div className="overflow-hidden rounded-3xl ring-1 ring-black/5 shadow-inner">
+                    <div className="group/image relative overflow-hidden rounded-3xl ring-1 ring-black/5 shadow-2xl">
                         <img
                             src={image.url}
                             alt={image.alt || title}
-                            className="h-auto w-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                            className="h-auto w-full object-cover transition-transform duration-1000 group-hover:scale-105"
                             style={{ aspectRatio: image.aspectRatio?.replace(':', '/') || '16/9' }}
                         />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity duration-500" />
                     </div>
                 )}
 
                 {/* Value Section */}
-                <div className={`flex flex-1 flex-col justify-center py-2 ${layout === 'centered' ? 'text-center' : ''}`}>
-                    <div className={`text-[15px] leading-relaxed tracking-tight sm:text-base ${normalizedTheme === 'neon' ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                <div className={`flex flex-1 flex-col justify-center ${layout === 'centered' ? 'text-center' : ''}`}>
+                    <div className={`text-[15px] leading-relaxed tracking-tight sm:text-[17px] ${normalizedTheme === 'neon' ? 'text-zinc-300' : 'text-zinc-600/90'}`}>
                         {renderContent(value)}
                     </div>
                 </div>
 
-                {/* Footer / Interaction Hint */}
-                <div className="flex items-center justify-between pt-2">
-                    <div className={`h-1 w-12 rounded-full ${normalizedTheme === 'neon' ? `bg-${detectedColor}-500/50` : colors.bg} transition-all duration-500 group-hover:w-24 group-hover:${colors.bg}`} />
-                    <div className={`text-[10px] opacity-0 transition-opacity duration-300 group-hover:opacity-100 font-medium ${colors.text} uppercase tracking-wider`}>
-                        View Details
+                {/* Footer Section */}
+                <div className="flex items-center justify-between border-t border-zinc-100/10 pt-4">
+                    <div className="flex gap-1.5">
+                        <div className={`h-1.5 w-1.5 rounded-full ${colors.bg} ${colors.text.replace('text', 'bg')}`} />
+                        <div className={`h-1.5 w-6 rounded-full bg-zinc-100 transition-all duration-500 group-hover:w-12 group-hover:${colors.bg}`} />
                     </div>
+                    <button className={`text-[10px] flex items-center gap-1.5 font-bold ${colors.text} uppercase tracking-[0.15em] opacity-0 translate-y-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0`}>
+                        Action Needed
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                    </button>
                 </div>
             </div>
 
-            {/* Premium Grain Overlay */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+            {/* Premium Textures & Overlays */}
+            <div className="absolute inset-0 opacity-[0.02] pointer-events-none mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
 
-            {/* Gloss reflection */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            {/* Shimmer Effect */}
+            <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
         </div>
     );
 });
+

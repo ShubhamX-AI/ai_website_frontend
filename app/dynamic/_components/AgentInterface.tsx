@@ -52,8 +52,9 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                 className={`flex w-full ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
                 {msg.type === 'flashcard' && msg.cardData ? (
-                    console.log(msg.cardData),
-                    <Flashcard {...msg.cardData} />
+                    <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg mb-2">
+                        <Flashcard {...msg.cardData} />
+                    </div>
                 ) : (
                     <div
                         className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ring-1 ring-inset backdrop-blur-md transition-all sm:max-w-[75%] sm:px-5 sm:py-3.5 ${msg.sender === 'user'
