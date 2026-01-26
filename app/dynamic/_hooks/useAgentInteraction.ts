@@ -130,6 +130,7 @@ export function useAgentInteraction() {
             const strData = new TextDecoder().decode(payload);
             try {
                 const data = JSON.parse(strData);
+                console.log('--- INCOMING DATA CHANNEL MESSAGE ---', { topic, data });
                 // Check either topic or data type for flashcards
                 if (topic === 'ui.flashcard' || data.type === 'flashcard') {
                     const id = `card-${Date.now()}-${Math.random()}`;
