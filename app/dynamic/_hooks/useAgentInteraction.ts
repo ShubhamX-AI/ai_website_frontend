@@ -32,6 +32,8 @@ export interface ChatMessage {
     cardData?: {
         title: string;
         value: string;
+        stream_id?: string;
+        card_index?: number;
     } & FlashcardStyle;
     isInterim?: boolean;
     timestamp: number;
@@ -72,7 +74,7 @@ export function useAgentInteraction() {
         const visibleCards = sortedMessages
             .filter(m => m.type === 'flashcard')
 
-            
+
             .slice(-5) // Backend only needs the most recent/relevant ones
             .map(m => ({
                 id: m.id,
@@ -97,7 +99,7 @@ export function useAgentInteraction() {
         };
 
         const encoder = new TextEncoder();
-        console.log('--- SYNCING UI CONTEXT (SNAPSHOT) ---', context);
+        // console.log('--- SYNCING UI CONTEXT (SNAPSHOT) ---', context);
         localParticipant.publishData(encoder.encode(JSON.stringify(context)), {
             reliable: true,
             topic: 'ui.context'
@@ -108,7 +110,7 @@ export function useAgentInteraction() {
         if (room?.state === 'connected') {
             // Initial sync when agent is present
             if (agentTrack) {
-                console.log('--- AGENT JOINED, SYNCING UI CONTEXT ---');
+                // console.log('--- AGENT JOINED, SYNCING UI CONTEXT ---');
                 syncUIContext();
             }
 
@@ -165,8 +167,40 @@ export function useAgentInteraction() {
                 // Check either topic or data type for flashcards
                 if (topic === 'ui.flashcard' || data.type === 'flashcard') {
                     const id = `card-${Date.now()}-${Math.random()}`;
+                    const streamId = data.stream_id || null;
+
+                    console.log('--- PROCESSING FLASHCARD ---', {
+                        streamId,
+                        card_index: data.card_index,
+                        title: data.title
+                    });
+
                     setMessagesMap((prev) => {
                         const next = new Map(prev);
+
+                        // Find the current active stream_id from existing flashcards
+                        const existingCards = Array.from(next.values()).filter(m => m.type === 'flashcard');
+                        const currentStreamId = existingCards.length > 0
+                            ? existingCards[existingCards.length - 1].cardData?.stream_id
+                            : null;
+
+                        console.log('--- STREAM COMPARISON ---', {
+                            newStreamId: streamId,
+                            currentStreamId: currentStreamId,
+                            existingCardsCount: existingCards.length,
+                            willClear: streamId && streamId !== currentStreamId
+                        });
+
+                        // If stream ID is different, clear previous cards
+                        if (streamId && currentStreamId && streamId !== currentStreamId) {
+                            console.log('--- CLEARING OLD STREAM ---', { oldStream: currentStreamId, newStream: streamId });
+                            for (const [key, msg] of next.entries()) {
+                                if (msg.type === 'flashcard') {
+                                    next.delete(key);
+                                }
+                            }
+                        }
+
                         next.set(id, {
                             id,
                             type: 'flashcard',
@@ -178,12 +212,19 @@ export function useAgentInteraction() {
                                 theme: data.theme,
                                 size: data.size,
                                 layout: data.layout,
-                                image: data.image
+                                image: data.image,
+                                stream_id: streamId,
+                                card_index: data.card_index
                             },
                             sender: 'agent',
                             timestamp: Date.now(),
                             isInterim: false
                         });
+
+                        console.log('--- CARDS AFTER ADD ---', {
+                            totalCards: Array.from(next.values()).filter(m => m.type === 'flashcard').length
+                        });
+
                         return next;
                     });
                 }

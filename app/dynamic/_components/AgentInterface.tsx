@@ -41,25 +41,23 @@ const SubtitleOverlay = ({ text, isInterim }: { text: string | null; isInterim: 
     );
 };
 
-const CardDisplay = ({ card }: { card: ChatMessage | null }) => {
-    const [visibleCard, setVisibleCard] = useState<ChatMessage | null>(null);
+const CardDisplay = ({ cards }: { cards: ChatMessage[] }) => {
+    if (cards.length === 0) return null;
 
-    useEffect(() => {
-        if (card) {
-            setVisibleCard(card);
-        }
-    }, [card]);
-
-    if (!visibleCard || !visibleCard.cardData) return null;
+    // Filter out cards without cardData with proper type guard
+    const validCards = cards.filter((card): card is ChatMessage & { cardData: NonNullable<ChatMessage['cardData']> } =>
+        card && card.cardData !== undefined && card.cardData.title !== undefined
+    );
+    if (validCards.length === 0) return null;
 
     return (
-        <>
+        <div className="relative flex w-full max-w-7xl flex-col items-center">
             <style jsx>{`
                 @keyframes card-enter {
                     0% {
                         opacity: 0;
-                        transform: scale(0.95) translateY(20px);
-                        filter: blur(4px);
+                        transform: scale(0.9) translateY(30px);
+                        filter: blur(10px);
                     }
                     100% {
                         opacity: 1;
@@ -68,15 +66,60 @@ const CardDisplay = ({ card }: { card: ChatMessage | null }) => {
                     }
                 }
                 .card-animation {
-                    animation: card-enter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+                    animation: card-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                 }
+                .stagger-1 { animation-delay: 0.1s; }
+                .stagger-2 { animation-delay: 0.2s; }
+                .stagger-3 { animation-delay: 0.3s; }
+                .stagger-4 { animation-delay: 0.4s; }
             `}</style>
-            <div key={visibleCard.id} className="relative z-0 flex w-full max-w-lg card-animation">
-                <div className="w-full transition-all duration-500">
-                    <Flashcard {...visibleCard.cardData} />
-                </div>
+
+            {/* Grid layout for multiple cards */}
+            <div className={`relative z-10 w-full px-4 md:px-6 grid gap-6 ${validCards.length === 1 ? 'grid-cols-1 max-w-lg mx-auto' :
+                validCards.length === 2 ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto' :
+                    validCards.length === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
+                        'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                }`}>
+                {validCards.map((card, idx) => (
+                    <div
+                        key={card.id}
+                        className={`card-animation ${idx === 0 ? '' :
+                            idx === 1 ? 'stagger-1' :
+                                idx === 2 ? 'stagger-2' :
+                                    idx === 3 ? 'stagger-3' :
+                                        'stagger-4'
+                            }`}
+                        style={{
+                            animationDelay: `${idx * 0.1}s`,
+                            opacity: 0,
+                            animationFillMode: 'forwards'
+                        }}
+                    >
+                        <Flashcard
+
+                            {...card.cardData}
+                        />
+                    </div>
+                ))}
             </div>
-        </>
+
+            {/* Optional card count indicator */}
+            {validCards.length > 1 && (
+                <div className="mt-6 flex items-center gap-2 rounded-full bg-white/40 px-4 py-2 backdrop-blur-xl ring-1 ring-black/5 shadow-lg">
+                    <div className="flex gap-1.5">
+                        {validCards.map((_, idx) => (
+                            <div
+                                key={idx}
+                                className="h-1.5 w-1.5 rounded-full bg-zinc-400"
+                            />
+                        ))}
+                    </div>
+                    <span className="text-xs font-medium text-zinc-600">
+                        {validCards.length} {validCards.length === 1 ? 'Card' : 'Cards'}
+                    </span>
+                </div>
+            )}
+        </div>
     );
 };
 
@@ -96,10 +139,9 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
     const [isMuted, setIsMuted] = useState(false);
     const [isAgentMuted, setIsAgentMuted] = useState(false);
 
-    // Compute latest card and subtitle
-    const latestCard = useMemo(() => {
-        const cards = messages.filter(m => m.type === 'flashcard');
-        return cards.length > 0 ? cards[cards.length - 1] : null;
+    // Compute flashcards and latest agent message
+    const flashcards = useMemo(() => {
+        return messages.filter(m => m.type === 'flashcard');
     }, [messages]);
 
     const latestAgentMessage = useMemo(() => {
@@ -141,10 +183,10 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
 
             {/* Central Content (Card Display) */}
             <div className="absolute inset-0 flex items-center justify-center p-6 md:p-12 z-0 pb-32">
-                <CardDisplay card={latestCard} />
+                <CardDisplay cards={flashcards} />
 
                 {/* Empty State / Prompt if no card */}
-                {!latestCard && (
+                {flashcards.length === 0 && (
                     <div className="text-center opacity-60 animate-pulse">
                         <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100">
                             <ThreeJSVisualizer agentTrack={activeTrack} userTrack={userTrack} />
