@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Sphere, MeshDistortMaterial, Float } from '@react-three/drei';
+import { Sphere, MeshDistortMaterial, Float, Environment } from '@react-three/drei';
 import { TrackReferenceOrPlaceholder, useTrackVolume } from '@livekit/components-react';
 import * as THREE from 'three';
 
@@ -23,40 +23,38 @@ const AnimatedBlob = ({ agentTrack, userTrack }: ThreeJSVisualizerProps) => {
         const aVol = Math.max(0, agentVol || 0);
         const uVol = Math.max(0, userVol || 0);
 
-        // Total activity
-        const totalVol = Math.min(1, aVol + uVol);
+        // Total activity - Sensitive enough to pick up subtle speech
+        const totalVol = Math.min(1, (aVol + uVol) * 2.0);
 
-        // Distort Animation
-        const targetDistort = 0.4 + (totalVol * 0.6);
-        const targetSpeed = 3 + (totalVol * 4);
+        // Animation Dynamics
+        // For the "Core" look, we want symmetry. We distort less, but speed up.
+        // Idle: smooth sphere. Active: energetic ripple.
+        const targetDistort = 0.15 + (totalVol * 0.25); // Keeps it mostly spherical
+        const targetSpeed = 3 + (totalVol * 6);
 
-        // Smooth interpolation
-        materialRef.current.distort = THREE.MathUtils.lerp(materialRef.current.distort, targetDistort, 0.15);
-        materialRef.current.speed = THREE.MathUtils.lerp(materialRef.current.speed, targetSpeed, 0.15);
+        // Interpolation
+        materialRef.current.distort = THREE.MathUtils.lerp(materialRef.current.distort, targetDistort, 0.1);
+        materialRef.current.speed = THREE.MathUtils.lerp(materialRef.current.speed, targetSpeed, 0.1);
 
-        // Color Handling
-        const baseColor = new THREE.Color("#4f46e5"); // Indigo 600
-        const userColor = new THREE.Color("#10b981"); // Emerald 500
-
-        let mixFactor = 0;
-        if (uVol > 0.05 && uVol > aVol) {
-            mixFactor = Math.min(1, uVol * 4);
-        }
-
-        const targetColor = baseColor.clone().lerp(userColor, mixFactor);
-        materialRef.current.color.lerp(targetColor, 0.1);
+        // Color Handling - Subtle Shift
+        // Based on reference: White/Cyan center with Blue depth.
+        // We modulate the emissive color slightly based on volume for "Glow"
+        // But we rely mainly on the lights for the gradient.
     });
 
     return (
-        <Float speed={5} rotationIntensity={0.2} floatIntensity={0.2}>
-            <Sphere args={[1, 64, 64]} scale={1.2}>
+        <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+            <Sphere args={[1, 256, 256]} scale={1.8}>
                 <MeshDistortMaterial
                     ref={materialRef}
-                    color="#4f46e5"
-                    roughness={0.1}
-                    metalness={0.6}
-                    distort={0.4}
+                    color="#ffffff"
+                    emissive="#3b82f6"
+                    emissiveIntensity={0.1}
+                    roughness={0.4}
+                    metalness={0.1}
+                    distort={0.15}
                     speed={3}
+                    bumpScale={0.01}
                 />
             </Sphere>
         </Float>
@@ -65,11 +63,24 @@ const AnimatedBlob = ({ agentTrack, userTrack }: ThreeJSVisualizerProps) => {
 
 export const ThreeJSVisualizer: React.FC<ThreeJSVisualizerProps> = (props) => {
     return (
-        <div className="h-full w-full overflow-hidden">
-            <Canvas camera={{ position: [0, 0, 3], fov: 40 }}>
-                <ambientLight intensity={1.5} />
-                <pointLight position={[5, 5, 5]} intensity={2.5} color="#ffffff" />
-                <pointLight position={[-5, -5, -5]} intensity={1.5} color="#4f46e5" />
+        <div className="h-full w-full">
+            <Canvas camera={{ position: [0, 0, 8], fov: 35 }} gl={{ alpha: true, antialias: true }}>
+                {/* Environment provides the "Gloss" and natural reflections */}
+                <Environment preset="city" />
+
+                {/* Lighting Setup for the "Core" Gradient Look */}
+                {/* 1. Main soft white light from top-front */}
+                <pointLight position={[5, 10, 10]} intensity={2.0} color="#ffffff" />
+
+                {/* 2. Cyan/Blue fill from bottom-left */}
+                <pointLight position={[-10, -10, 5]} intensity={4.0} color="#06b6d4" />
+
+                {/* 3. Deep Blue rim light from right */}
+                <pointLight position={[10, 0, -5]} intensity={3.0} color="#3b82f6" />
+
+                {/* 4. Purple accent for depth */}
+                <pointLight position={[0, -8, 2]} intensity={1.5} color="#8b5cf6" />
+
                 <AnimatedBlob {...props} />
             </Canvas>
         </div>

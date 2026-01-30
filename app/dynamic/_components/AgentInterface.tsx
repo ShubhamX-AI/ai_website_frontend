@@ -162,14 +162,12 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                 <CardDisplay cards={flashcards} />
 
                 {/* Empty State / Prompt if no card */}
+                {/* Empty State / Prompt if no card */}
                 {flashcards.length === 0 && (
-                    <div className="text-center opacity-60 animate-pulse">
-                        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100">
+                    <div className="flex items-center justify-center pointer-events-none">
+                        <div className="relative h-[280px] w-[280px] sm:h-[400px] sm:w-[400px] md:h-[500px] md:w-[500px]">
                             <ThreeJSVisualizer agentTrack={activeTrack} userTrack={userTrack} />
                         </div>
-                        <h2 className="text-xl font-medium text-zinc-400">
-                            {agentState === 'speaking' ? 'Agent is speaking...' : 'Waiting for context...'}
-                        </h2>
                     </div>
                 )}
             </div>
