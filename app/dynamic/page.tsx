@@ -99,7 +99,11 @@ export default function DynamicPage() {
                 serverUrl={LIVEKIT_URL}
                 connect={true}
                 video={false}
-                audio={true}
+                audio={{
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true,
+                }}
                 data-lk-theme="default"
                 style={{ height: '100%' }}
                 onDisconnected={handleDisconnect}

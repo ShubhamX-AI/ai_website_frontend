@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAgentInteraction, ChatMessage } from '../_hooks/useAgentInteraction';
-import { ThreeJSVisualizer } from './ThreeJSVisualizer';
+import { BarVisualizer } from './BarVisualizer';
 import { Flashcard } from './Flashcard';
 import { RoomAudioRenderer } from '@livekit/components-react';
 
@@ -162,11 +162,11 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                 <CardDisplay cards={flashcards} />
 
                 {/* Empty State / Prompt if no card */}
-                {/* Empty State / Prompt if no card */}
+                {/* Empty State / Visualizer if no card */}
                 {flashcards.length === 0 && (
-                    <div className="flex items-center justify-center pointer-events-none">
-                        <div className="relative h-[280px] w-[280px] sm:h-[400px] sm:w-[400px] md:h-[500px] md:w-[500px]">
-                            <ThreeJSVisualizer agentTrack={activeTrack} userTrack={userTrack} />
+                    <div className="flex flex-col items-center justify-center">
+                        <div className="relative h-48 w-64 sm:h-64 sm:w-80 md:h-80 md:w-[400px]">
+                            <BarVisualizer agentTrack={activeTrack} userTrack={userTrack} />
                         </div>
                     </div>
                 )}
@@ -184,9 +184,9 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                 <div className="pointer-events-auto flex w-full justify-center p-4">
                     <div className="flex w-full items-center gap-1.5 rounded-[32px] bg-white/90 p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] ring-1 ring-zinc-200 backdrop-blur-2xl transition-all sm:w-auto sm:max-w-none sm:gap-3 sm:p-2 sm:pl-3 hover:scale-[1.01] hover:shadow-[0_8px_40px_rgb(0,0,0,0.16)]">
 
-                        {/* AI Orb Visualizer */}
-                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-zinc-100/50 ring-1 ring-zinc-200 sm:h-12 sm:w-12">
-                            <ThreeJSVisualizer agentTrack={activeTrack} userTrack={userTrack} />
+                        {/* AI Mini Visualizer */}
+                        <div className="relative h-10 w-12 shrink-0 overflow-hidden rounded-xl bg-zinc-100/50 ring-1 ring-zinc-200 sm:h-12 sm:w-16">
+                            <BarVisualizer agentTrack={activeTrack} userTrack={userTrack} mode="mini" />
                         </div>
 
                         {/* Agent Mute Toggle (Speaker Icon) */}
