@@ -32,15 +32,9 @@ export const DynamicImage: React.FC<DynamicImageProps> = ({
     // https://placehold.co doesn't do keywords well visually.
     // https://loremflickr.com/ is good for keywords.
     const getUrl = () => {
-        if (source === 'unsplash') {
-            return `https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=${width}&auto=format&fit=crop`; // Generic Tech fallback
-            // In a real implementation with API Key: 
-            // return `https://api.unsplash.com/photos/random?query=${query}&client_id=YOUR_KEY`
-
-            // Trying a keyword based one (Lorem Flickr)
-            return `https://loremflickr.com/${width}/${height}/${encodeURIComponent(query)}/all`;
-        }
-        return `https://loremflickr.com/${width}/${height}/${encodeURIComponent(query)}`;
+        const encodedQuery = encodeURIComponent(query);
+        // Using Lorem Flickr search for reliable keyword-based variety
+        return `https://loremflickr.com/${width}/${height}/${encodedQuery},technology/all`;
     };
 
     const imageUrl = error ? `https://placehold.co/${width}x${height}?text=${encodeURIComponent(alt)}` : getUrl();

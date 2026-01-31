@@ -81,9 +81,9 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
     };
 
     const sizeClasses = {
-        small: 'p-4 w-64',
-        medium: 'p-6 w-80 md:w-96',
-        large: 'p-8 w-full max-w-2xl'
+        small: 'p-4 w-full max-w-[280px]',
+        medium: 'p-6 w-full max-w-[420px]',
+        large: 'p-8 w-full max-w-4xl'
     };
 
     // 3. Animation Variants

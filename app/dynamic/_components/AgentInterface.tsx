@@ -56,10 +56,10 @@ const CardDisplay = ({ cards }: { cards: ChatMessage[] }) => {
             {/* Grid layout for multiple cards */}
             <motion.div
                 layout
-                className={`relative z-10 w-full px-4 md:px-6 grid gap-6 ${validCards.length === 1 ? 'grid-cols-1 max-w-lg mx-auto' :
-                    validCards.length === 2 ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto' :
-                        validCards.length === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
-                            'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                className={`relative z-10 w-full px-4 md:px-6 grid gap-6 justify-items-center ${validCards.length === 1 ? 'grid-cols-1 max-w-lg mx-auto' :
+                        validCards.length === 2 ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto' :
+                            validCards.length === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
+                                'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'
                     }`}
             >
                 <AnimatePresence mode="popLayout">
