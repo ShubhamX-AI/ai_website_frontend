@@ -31,8 +31,10 @@ export interface FlashcardStyle {
         fallback?: string;
     };
     dynamicMedia?: {
+        urls?: string[];
         query?: string;
         source?: 'unsplash' | 'pexels';
+        aspectRatio?: 'auto' | 'video' | 'square' | 'portrait';
     };
 }
 
@@ -255,7 +257,10 @@ export function useAgentInteraction() {
                                 visual_intent: data.visual_intent,
                                 animation_style: data.animation_style,
                                 smartIcon: data.icon ? (typeof data.icon === 'string' ? { type: 'static', ref: data.icon } : data.icon) : undefined,
-                                dynamicMedia: data.media
+                                dynamicMedia: data.media ? {
+                                    ...data.media,
+                                    urls: data.urls || data.media?.urls // Handle both flat 'urls' and nested 'media.urls'
+                                } : undefined
                             },
                             sender: 'agent',
                             timestamp: Date.now(),

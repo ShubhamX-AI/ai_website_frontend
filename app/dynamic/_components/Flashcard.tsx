@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FlashcardStyle } from '../_hooks/useAgentInteraction';
 import { SmartIcon } from './SmartIcon';
-import { DynamicImage } from './DynamicImage';
+import { RichMedia } from './RichMedia';
 
 interface FlashcardProps {
     title: string;
@@ -185,17 +185,21 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
                     )}
                 </div>
 
-                {/* Dynamic Image / Media */}
+                {/* Dynamic Media / URLs / Static Image */}
                 {(image || dynamicMedia) && (
-                    <div className="rounded-2xl overflow-hidden shadow-sm ring-1 ring-black/5 aspect-video w-full mt-2">
-                        {dynamicMedia ? (
-                            <DynamicImage
-                                query={dynamicMedia.query || title}
-                                source={dynamicMedia.source}
-                                alt={title}
-                            />
-                        ) : (
-                            <img src={image?.url} alt={image?.alt} className="w-full h-full object-cover" />
+                    <div className="mt-2 w-full">
+                        <RichMedia
+                            urls={dynamicMedia?.urls}
+                            query={dynamicMedia?.query || (image ? undefined : title)}
+                            source={dynamicMedia?.source}
+                            aspectRatio={dynamicMedia?.aspectRatio || 'video'}
+                            alt={title}
+                        />
+                        {/* Fallback for old static image if no dynamicMedia exists */}
+                        {!dynamicMedia && image?.url && (
+                            <div className="rounded-2xl overflow-hidden shadow-sm ring-1 ring-black/5 aspect-video w-full">
+                                <img src={image.url} alt={image.alt} className="w-full h-full object-cover" />
+                            </div>
                         )}
                     </div>
                 )}
