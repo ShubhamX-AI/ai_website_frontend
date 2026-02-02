@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { searchPixabayImages } from '@/lib/pixabay';
 
 interface DynamicImageProps {
     query?: string;
-    source?: 'unsplash' | 'pexels' | 'local';
+    source?: 'unsplash' | 'pexels' | 'local' | 'pixabay';
     alt: string;
     className?: string;
     width?: number;
@@ -14,43 +15,92 @@ interface DynamicImageProps {
 
 export const DynamicImage: React.FC<DynamicImageProps> = ({
     query = 'technology',
-    source = 'unsplash',
+    source = 'pixabay',
     alt,
     className,
     width = 800,
     height = 600
 }) => {
+    const [imageUrl, setImageUrl] = useState<string>('');
+    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
 
-    // Construct URL based on source
-    // Note: source.unsplash.com is deprecated but often mapped; 
-    // better to use a specific service or user-provided key in production.
-    // For this prototype, we use a reliable placeholder service that supports keywords 
-    // if the main one fails, or try a direct typically working public endpoint if available.
+    useEffect(() => {
+        const fetchPixabayImage = async () => {
+            if (source !== 'pixabay') {
+                // Fallback to Lorem Flickr for other sources
+                const encodedQuery = encodeURIComponent(query);
+                setImageUrl(`https://loremflickr.com/${width}/${height}/${encodedQuery},technology/all`);
+                setIsLoading(false);
+                return;
+            }
 
-    // Using a robust placeholder service for demo stability:
-    // https://placehold.co doesn't do keywords well visually.
-    // https://loremflickr.com/ is good for keywords.
-    const getUrl = () => {
-        const encodedQuery = encodeURIComponent(query);
-        // Using Lorem Flickr search for reliable keyword-based variety
-        return `https://loremflickr.com/${width}/${height}/${encodedQuery},technology/all`;
-    };
+            try {
+                setIsLoading(true);
+                const response = await searchPixabayImages(query, {
+                    imageType: 'photo',
+                    orientation: 'all',
+                    perPage: 1,
+                    page: Math.floor(Math.random() * 10) + 1, // Random page for variety
+                    safeSearch: true,
+                });
 
-    const imageUrl = error ? `https://placehold.co/${width}x${height}?text=${encodeURIComponent(alt)}` : getUrl();
+                if (response.hits && response.hits.length > 0) {
+                    // Use webformatURL for good quality images
+                    setImageUrl(response.hits[0].webformatURL);
+                } else {
+                    // No results, fallback to Lorem Flickr
+                    const encodedQuery = encodeURIComponent(query);
+                    setImageUrl(`https://loremflickr.com/${width}/${height}/${encodedQuery},technology/all`);
+                }
+            } catch (err) {
+                console.error('Pixabay API error:', err);
+                // Fallback to Lorem Flickr on error
+                const encodedQuery = encodeURIComponent(query);
+                setImageUrl(`https://loremflickr.com/${width}/${height}/${encodedQuery},technology/all`);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchPixabayImage();
+    }, [query, source, width, height]);
+
+    const fallbackUrl = `https://placehold.co/${width}x${height}?text=${encodeURIComponent(alt)}`;
 
     return (
         <div className={`relative overflow-hidden bg-zinc-100 ${className}`}>
-            {/* We use standard img tag here to avoid Next.js Image Config External Domain errors for random sources,
-                 or we must configure next.config.ts to allow all domains. 
-                 Safest for 'dynamic wild sources' is standard img with unoptimized prop if using Next Image, 
-                 or just <img />. */}
-            <img
-                src={imageUrl}
-                alt={alt}
-                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-                onError={() => setError(true)}
-            />
+            {/* Loading State */}
+            {isLoading && (
+                <div className="absolute inset-0 z-10 bg-zinc-100/50 backdrop-blur-sm flex items-center justify-center">
+                    <div className="flex space-x-2">
+                        <div className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                        <div className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                        <div className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce"></div>
+                    </div>
+                </div>
+            )}
+
+            {/* Image */}
+            {imageUrl && (
+                <Image
+                    src={error ? fallbackUrl : imageUrl}
+                    alt={alt}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-700 hover:scale-105"
+                    onLoad={() => setIsLoading(false)}
+                    onError={() => {
+                        setError(true);
+                        setIsLoading(false);
+                    }}
+                    placeholder="blur"
+                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+                    quality={85}
+                    priority={false}
+                />
+            )}
+
             {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
         </div>

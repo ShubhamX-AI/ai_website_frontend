@@ -7,7 +7,7 @@ import { DynamicImage } from './DynamicImage';
 interface RichMediaProps {
     urls?: string[];
     query?: string;
-    source?: 'unsplash' | 'pexels';
+    source?: 'unsplash' | 'pexels' | 'pixabay';
     aspectRatio?: 'auto' | 'video' | 'square' | 'portrait';
     alt?: string;
 }
