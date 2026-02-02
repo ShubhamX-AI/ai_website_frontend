@@ -75,7 +75,9 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
     const colors = colorMap[detectedColorName] || colorMap.zinc;
 
     // 2. Determine Styling Classes
-    const normalizedSize = (size === 'sm' || size === 'small') ? 'small' : (size === 'lg' || size === 'large') ? 'large' : 'medium';
+    const normalizedSize = (size === 'tiny' || size === 'extra-small') ? 'tiny' :
+        (size === 'sm' || size === 'small') ? 'small' :
+            (size === 'lg' || size === 'large') ? 'large' : 'medium';
     const normalizedTheme = theme || (visual_intent === 'cyberpunk' ? 'neon' : 'glass');
 
     const themeClasses = {
@@ -86,27 +88,28 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
     };
 
     const sizeClasses = {
-        small: 'p-3 w-full max-w-[260px] md:p-4 md:max-w-[280px]',
-        medium: 'p-4 gap-3 w-full max-w-[340px] md:p-6 md:gap-5 md:max-w-[420px]',
-        large: 'p-6 w-full max-w-4xl md:p-8'
+        tiny: 'p-1.5 gap-1.5 w-full max-w-[150px] md:p-2.5 md:max-w-[200px]',
+        small: 'p-2 gap-2 w-full max-w-[180px] md:p-3 md:max-w-[240px]',
+        medium: 'p-2.5 gap-2.5 w-full max-w-[240px] md:p-6 md:gap-5 md:max-w-[400px]',
+        large: 'p-4 w-full max-w-4xl md:p-8'
     };
 
     // 3. Animation Variants
     const variants = {
-        hidden: { opacity: 0, y: 20, scale: 0.95 },
+        hidden: { opacity: 0, y: 10, scale: 0.98 },
         visible: {
             opacity: 1,
             y: 0,
             scale: 1,
-            transition: { type: 'spring', stiffness: 300, damping: 20 }
+            transition: { type: 'spring', stiffness: 350, damping: 25 }
         },
-        exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
+        exit: { opacity: 0, scale: 0.95, transition: { duration: 0.1 } },
         pop: {
             hidden: { opacity: 0, scale: 0.5 },
             visible: { opacity: 1, scale: 1, transition: { type: 'spring' } }
         },
         slide: {
-            hidden: { opacity: 0, x: -50 },
+            hidden: { opacity: 0, x: -20 },
             visible: { opacity: 1, x: 0 }
         }
     };
@@ -125,13 +128,13 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
             if (kvMatch) {
                 const [, label, val] = kvMatch;
                 return (
-                    <div key={i} className="flex flex-col gap-0.5 mb-2 last:mb-0 md:gap-1 md:mb-3">
-                        <span className={`text-[9px] font-bold uppercase tracking-widest md:text-[10px] ${normalizedTheme === 'neon' ? 'text-zinc-500' : 'text-zinc-400'}`}>{label}</span>
-                        <span className={`font-medium text-xs md:text-base ${normalizedTheme === 'neon' ? 'text-zinc-100' : 'text-zinc-800'}`}>{val}</span>
+                    <div key={i} className="flex flex-col gap-0 mb-1 last:mb-0 md:gap-0.5 md:mb-2">
+                        <span className={`text-[7px] font-bold uppercase tracking-widest md:text-[9px] ${normalizedTheme === 'neon' ? 'text-zinc-500' : 'text-zinc-400'}`}>{label}</span>
+                        <span className={`font-medium text-[10px] leading-tight md:text-sm ${normalizedTheme === 'neon' ? 'text-zinc-100' : 'text-zinc-800'}`}>{val}</span>
                     </div>
                 );
             }
-            return <p key={i} className="mb-1.5 last:mb-0 text-xs leading-relaxed opacity-90 md:mb-2 md:text-sm">{line.replace(/\*\*/g, '')}</p>;
+            return <p key={i} className="mb-0.5 last:mb-0 text-[10px] leading-relaxed opacity-90 md:mb-1.5 md:text-xs">{line.replace(/\*\*/g, '')}</p>;
         });
     };
 
@@ -143,36 +146,36 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
             exit="exit"
             variants={selectedVariant as any}
             className={`
-                relative overflow-hidden rounded-[2rem] 
+                relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem]
                 ${themeClasses[normalizedTheme as keyof typeof themeClasses]} 
                 ${sizeClasses[normalizedSize]}
                 group transition-colors
             `}
         >
             {/* Ambient Glow */}
-            <div className={`absolute -right-20 -top-20 h-64 w-64 rounded-full ${colors.glow} blur-[60px] opacity-40`} />
+            <div className={`absolute -right-20 -top-20 h-40 w-40 md:h-64 md:w-64 rounded-full ${colors.glow} blur-[30px] md:blur-[60px] opacity-25 md:opacity-40`} />
 
-            <div className={`relative z-10 flex flex-col h-full gap-5 ${layout === 'media-top' ? 'justify-start' : 'justify-between'}`}>
+            <div className={`relative z-10 flex flex-col h-full gap-2 md:gap-5 ${layout === 'media-top' ? 'justify-start' : 'justify-between'}`}>
 
                 {/* Header */}
                 <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 md:gap-4">
                         {/* Smart Icon Wrapper */}
                         <div className={`
-                            flex h-10 w-10 items-center justify-center rounded-xl md:h-12 md:w-12 md:rounded-2xl
+                            flex h-7 w-7 items-center justify-center rounded-lg md:h-12 md:w-12 md:rounded-2xl
                             ${normalizedTheme === 'neon' ? `bg-gradient-to-br ${colors.gradient} text-white` : `bg-white ${colors.text} ring-1 ring-zinc-100 shadow-sm`}
                             transition-all duration-300 group-hover:scale-110
                         `}>
                             <SmartIcon
                                 iconRef={smartIcon?.ref || icon || 'info'}
                                 type={smartIcon?.type || 'static'}
-                                className="w-5 h-5 md:w-6 md:h-6"
+                                className="w-3.5 h-3.5 md:w-6 md:h-6"
                             />
                         </div>
 
                         <div>
                             {/* <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-0.5">Insight</div> */}
-                            <h3 className={`text-base font-bold leading-tight md:text-lg ${normalizedTheme === 'neon' ? 'text-white' : 'text-zinc-900'}`}>
+                            <h3 className={`text-xs md:text-lg font-bold leading-tight ${normalizedTheme === 'neon' ? 'text-white' : 'text-zinc-900'}`}>
                                 {title}
                             </h3>
                         </div>
@@ -180,13 +183,13 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
 
                     {/* Status Dot */}
                     {visual_intent === 'processing' ? (
-                        <div className="flex space-x-1">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
+                        <div className="flex space-x-0.5 md:space-x-1">
+                            <div className="w-0.5 h-0.5 md:w-1.5 md:h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                            <div className="w-0.5 h-0.5 md:w-1.5 md:h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div className="w-0.5 h-0.5 md:w-1.5 md:h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
                         </div>
                     ) : (
-                        <div className={`w-2 h-2 rounded-full ${visual_intent === 'urgent' ? 'bg-red-500 animate-ping' : 'bg-blue-500'}`} />
+                        <div className={`w-1 h-1 md:w-2 md:h-2 rounded-full ${visual_intent === 'urgent' ? 'bg-red-500 animate-ping' : 'bg-blue-500'}`} />
                     )}
                 </div>
 

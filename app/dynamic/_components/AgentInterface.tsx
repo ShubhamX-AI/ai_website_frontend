@@ -60,55 +60,53 @@ const CardDisplay = ({ cards }: { cards: ChatMessage[] }) => {
     );
     if (validCards.length === 0) return null;
 
-    // On mobile, show only the latest card to ensure it fits on screen without scrolling
-    const displayedCards = useMemo(() => {
-        if (typeof window !== 'undefined' && window.innerWidth < 768) {
-            return validCards.slice(-1);
-        }
-        return validCards;
-    }, [validCards]);
+    // Dynamic size based on total cards
+    const cardSize = useMemo(() => {
+        const count = validCards.length;
+        if (count === 1) return 'medium';
+        if (count <= 2) return 'medium';
+        if (count <= 4) return 'small';
+        return 'tiny';
+    }, [validCards.length]);
 
     return (
         <div className="relative flex w-full max-w-7xl flex-col items-center">
-            {/* Grid layout for multiple cards */}
+            {/* Flex layout for symmetrical centering (3 above, 2 below etc) */}
             <motion.div
                 layout
-                className={`relative z-10 w-full px-4 md:px-6 grid gap-6 justify-items-center ${displayedCards.length === 1 ? 'grid-cols-1 max-w-lg mx-auto' :
-                    displayedCards.length === 2 ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto' :
-                        displayedCards.length === 3 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' :
-                            'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'
-                    }`}
+                className="relative z-10 flex w-full flex-wrap justify-center gap-3 px-2 md:px-6 md:gap-6"
             >
                 <AnimatePresence mode="popLayout">
-                    {displayedCards.map((card) => (
+                    {validCards.map((card) => (
                         <motion.div
                             layout
                             key={card.id}
-                            initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                            initial={{ opacity: 0, scale: 0.8, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                             transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            className="flex justify-center"
                         >
-                            <Flashcard {...card.cardData} />
+                            <Flashcard {...card.cardData} size={cardSize} />
                         </motion.div>
                     ))}
                 </AnimatePresence>
             </motion.div>
 
             {/* Optional card count indicator */}
-            {validCards.length > 1 && (
-                <div className="mt-6 flex items-center gap-2 rounded-full bg-white/40 px-4 py-2 backdrop-blur-xl ring-1 ring-black/5 shadow-lg">
-                    <div className="flex gap-1.5">
-                        {validCards.map((_, idx) => (
+            {validCards.length > 3 && (
+                <div className="mt-4 md:mt-6 flex items-center gap-2 rounded-full bg-white/40 px-3 py-1.5 md:px-4 md:py-2 backdrop-blur-xl ring-1 ring-black/5 shadow-lg">
+                    <div className="flex gap-1 md:gap-1.5">
+                        {validCards.slice(-5).map((_, idx) => (
                             <motion.div
                                 key={idx}
                                 layoutId={`dot-${idx}`}
-                                className="h-1.5 w-1.5 rounded-full bg-zinc-400"
+                                className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-zinc-400"
                             />
                         ))}
                     </div>
-                    <span className="text-xs font-medium text-zinc-600">
-                        {validCards.length} {validCards.length === 1 ? 'Card' : 'Cards'}
+                    <span className="text-[10px] md:text-xs font-medium text-zinc-600">
+                        {validCards.length} Cards
                     </span>
                 </div>
             )}

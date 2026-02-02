@@ -124,7 +124,7 @@ export const RichMedia: React.FC<RichMediaProps> = ({
         portrait: 'aspect-[3/4]'
     };
 
-    const containerClasses = `relative w-full overflow-hidden rounded-[1.5rem] group ring-1 ring-black/5 shadow-inner bg-zinc-100/50 ${ratioMap[aspectRatio]}`;
+    const containerClasses = `relative w-full overflow-hidden rounded-xl md:rounded-[1.5rem] group ring-1 ring-black/5 shadow-inner bg-zinc-100/50 ${ratioMap[aspectRatio]}`;
 
     // Priority 1: Direct URLs
     if (safeUrls && safeUrls.length > 0) {
