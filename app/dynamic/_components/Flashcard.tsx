@@ -7,6 +7,7 @@ import { RichMedia } from './RichMedia';
 interface FlashcardProps {
     title: string;
     value: string;
+    media?: any; // Add support for the media property from your data
 }
 
 type FullFlashcardProps = FlashcardProps & FlashcardStyle;
@@ -63,9 +64,13 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
     image,
     visual_intent,
     animation_style,
-    dynamicMedia
+    dynamicMedia,
+    media
 }) => {
-    // 1. Determine Colors
+    // 1. Resolve Media (Handle both 'media' and 'dynamicMedia' props)
+    const resolvedMedia = dynamicMedia || media;
+
+    // 2. Determine Colors
     const detectedColorName = (accentColor as string) || getIntentColors(visual_intent, guessColor(title || value));
     const colors = colorMap[detectedColorName] || colorMap.zinc;
 
@@ -186,17 +191,17 @@ export const Flashcard = React.memo<FullFlashcardProps>(({
                 </div>
 
                 {/* Dynamic Media / URLs / Static Image */}
-                {(image || dynamicMedia) && (
+                {(image || resolvedMedia) && (
                     <div className="mt-2 w-full">
                         <RichMedia
-                            urls={dynamicMedia?.urls}
-                            query={dynamicMedia?.query || (image ? undefined : title)}
-                            source={dynamicMedia?.source}
-                            aspectRatio={dynamicMedia?.aspectRatio || 'video'}
+                            urls={resolvedMedia?.urls}
+                            query={resolvedMedia?.query || (image ? undefined : title)}
+                            source={resolvedMedia?.source}
+                            aspectRatio={resolvedMedia?.aspectRatio || 'video'}
                             alt={title}
                         />
                         {/* Fallback for old static image if no dynamicMedia exists */}
-                        {!dynamicMedia && image?.url && (
+                        {!resolvedMedia && image?.url && (
                             <div className="rounded-2xl overflow-hidden shadow-sm ring-1 ring-black/5 aspect-video w-full">
                                 <img src={image.url} alt={image.alt} className="w-full h-full object-cover" />
                             </div>
