@@ -10,7 +10,7 @@ export function useLiveKitConnection() {
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
-    const connect = useCallback(async (agentName: string = 'web') => {
+    const connect = useCallback(async (agentName: string = 'indusnet') => {
         setIsConnecting(true);
         setError(null);
         try {
