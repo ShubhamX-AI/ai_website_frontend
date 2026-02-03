@@ -12,8 +12,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies and remove pnpm store to save space
+RUN pnpm install --frozen-lockfile && pnpm store prune
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -29,15 +29,6 @@ COPY . .
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
-
-# ⚠️ CRITICAL: Next.js needs these at build time to bake into the client bundle
-ARG NEXT_PUBLIC_LIVEKIT_URL
-ARG NEXT_PUBLIC_BACKEND_URL
-ARG NEXT_PUBLIC_PIXABAY_API_KEY
-
-ENV NEXT_PUBLIC_LIVEKIT_URL=$NEXT_PUBLIC_LIVEKIT_URL
-ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
-ENV NEXT_PUBLIC_PIXABAY_API_KEY=$NEXT_PUBLIC_PIXABAY_API_KEY
 
 # Build the application
 RUN pnpm build

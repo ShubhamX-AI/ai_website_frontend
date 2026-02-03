@@ -3,17 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      # Pass .env vars to the build process
-      args:
-        NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL}
-        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
-        NEXT_PUBLIC_PIXABAY_API_KEY: ${NEXT_PUBLIC_PIXABAY_API_KEY}
     container_name: ai_website_frontend
     restart: unless-stopped
     ports:
-      - "3011:3000"
-
-    # Simpler: Load everything from .env at runtime
+      - "3010:3000"
     env_file:
       - .env
 
