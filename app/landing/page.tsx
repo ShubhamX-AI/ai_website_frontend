@@ -41,8 +41,8 @@ export default function LandingPage() {
                         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                         className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl"
                     >
-                        Welcome to <br className="hidden sm:block" />
-                        <span className="text-blue-600">Indus Net Technologies</span>
+                        {/* Welcome to <br className="hidden sm:block" /> */}
+                        Indus Net <span className="font-semibold text-blue-600">Technologies</span>
                     </motion.h1>
 
                     <motion.p
@@ -51,7 +51,7 @@ export default function LandingPage() {
                         transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         className="max-w-xl text-lg font-light leading-relaxed text-slate-500 sm:text-xl"
                     >
-                        Precision-engineered AI solutions for the modern enterprise.
+                        AI solutions for the modern enterprise.
                     </motion.p>
                 </div>
 
