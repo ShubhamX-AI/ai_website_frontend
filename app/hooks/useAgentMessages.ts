@@ -153,6 +153,18 @@ export function useAgentMessages() {
                         return next;
                     });
                 }
+                else if (topic === 'user.details'){
+                    console.log('--- USER DETAILS ---', data);
+
+                    // Save into local storage
+                    const userInfo = {
+                        user_name: data.user_name,  // Name of the user
+                        user_email: data.user_email, // Email of the user
+                        user_id: data.user_id,       // ID of the user
+                        
+                    }
+                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                }
             } catch (e) { /* ignore non-json or noise */ }
         };
 
