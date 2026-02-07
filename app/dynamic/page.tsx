@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LiveKitRoom } from "@livekit/components-react";
-import { useLiveKitConnection } from "./_hooks/useLiveKitConnection";
+import { useLiveKitConnection } from "../hooks/useLiveKitConnection";
 import { AgentInterface } from "./_components/AgentInterface";
 
 const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || "";

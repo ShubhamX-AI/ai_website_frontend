@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAgentInteraction, ChatMessage } from '../_hooks/useAgentInteraction';
+import { useAgentInteraction, ChatMessage } from '../../hooks/useAgentInteraction';
 import { BarVisualizer } from './BarVisualizer';
 import { Flashcard } from './Flashcard';
 import { RoomAudioRenderer } from '@livekit/components-react';

@@ -3,8 +3,31 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+
+interface UserInfo {
+    name: string;
+    id: string;
+}
 
 export default function LandingPage() {
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+    useEffect(() => {
+        console.log("Checking local storage for user_info...");
+        const storedUser = localStorage.getItem("user_info");
+        if (storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                console.log("Found user in local storage:", parsedUser);
+                setUserInfo(parsedUser);
+            } catch (error) {
+                console.error("Failed to parse user info from local storage:", error);
+            }
+        } else {
+            console.log("No user info found in local storage.");
+        }
+    }, []);
     return (
         <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-slate-50 text-slate-900 selection:bg-blue-100 selection:text-blue-900">
 
@@ -41,8 +64,8 @@ export default function LandingPage() {
                         transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
                         className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl"
                     >
-                        Welcome to <br className="hidden sm:block" />
-                        <span className="text-blue-600">Indus Net Technologies</span>
+                        {/* Welcome to <br className="hidden sm:block" /> */}
+                        Indus Net <span className="font-semibold text-blue-600">Technologies</span>
                     </motion.h1>
 
                     <motion.p
@@ -51,7 +74,7 @@ export default function LandingPage() {
                         transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
                         className="max-w-xl text-lg font-light leading-relaxed text-slate-500 sm:text-xl"
                     >
-                        Precision-engineered AI solutions for the modern enterprise.
+                        AI solutions for the modern enterprise.
                     </motion.p>
                 </div>
 

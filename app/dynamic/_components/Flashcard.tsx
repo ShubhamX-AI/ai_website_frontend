@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FlashcardStyle } from '../_hooks/useAgentInteraction';
+import { FlashcardStyle } from '../../hooks/useAgentInteraction';
 import { SmartIcon } from './SmartIcon';
 import { RichMedia } from './RichMedia';
 

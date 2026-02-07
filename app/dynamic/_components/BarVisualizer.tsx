@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrackReferenceOrPlaceholder } from '@livekit/components-react';
-import { useAudioFFT } from '../_hooks/useAudioFFT';
+import { useAudioFFT } from '../../hooks/useAudioFFT';
 
 interface BarVisualizerProps {
     agentTrack?: TrackReferenceOrPlaceholder;
