@@ -182,6 +182,7 @@ export function useAgentMessages() {
                             emailFormData: {
                                 user_name: data.data?.user_name || data.user_name,
                                 user_email: data.data?.user_email || data.user_email,
+                                email_subject: data.data?.email_subject || data.email_subject,
                                 email_body: data.data?.email_body || data.email_body,
                             }
                         });

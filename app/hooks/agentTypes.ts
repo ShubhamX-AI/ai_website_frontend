@@ -32,6 +32,7 @@ export interface FlashcardStyle {
 export interface EmailFormData {
     user_name?: string;
     user_email?: string;
+    email_subject?: string;
     email_body?: string;
 }
 

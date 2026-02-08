@@ -49,6 +49,15 @@ export const EmailForm: React.FC<EmailFormProps> = ({ data }) => {
                 {/* Divider */}
                 <div className="h-px w-full bg-zinc-100 dark:bg-zinc-800" />
 
+                {/* Subject */}
+                <div className="space-y-1">
+                    <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider dark:text-zinc-400">Subject</label>
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 font-medium">{data.email_subject || '—'}</p>
+                </div>
+
+                {/* Divider */}
+                <div className="h-px w-full bg-zinc-100 dark:bg-zinc-800" />
+
                 {/* Message Body */}
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider dark:text-zinc-400">Message</label>
