@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-
+import { v4 as uuidv4 } from 'uuid';
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
 // The user pointed to livekit_modular which uses /api/getToken
 const TOKEN_ENDPOINT = `${BACKEND_URL}/api/getToken`;
@@ -10,13 +10,45 @@ export function useLiveKitConnection() {
     const [isConnecting, setIsConnecting] = useState(false);
     const [error, setError] = useState<Error | null>(null);
 
+    // Standardize key with other hooks
+    const USER_INFO_KEY = 'user_info';
+
+    // Read and parse user info safely
+    let user = null;
+    const storedUserInfo = typeof window !== 'undefined' ? localStorage.getItem(USER_INFO_KEY) : null;
+
+    if (storedUserInfo) {
+        try {
+            user = JSON.parse(storedUserInfo);
+        } catch (e) {
+            console.error("Failed to parse user info", e);
+        }
+    }
+
+    // If userInfo not present or invalid, create one and sync back to local variable
+    if (!user) {
+        user = {
+            user_name: '',
+            user_email: '',
+            user_id: uuidv4()
+        };
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
+        }
+    }
+
+    const name = user?.user_name || '';
+    const email = user?.user_email || '';
+    const userId = user?.user_id || '';
+
+
+
     const connect = useCallback(async (agentName: string = 'indusnet') => {
         setIsConnecting(true);
         setError(null);
         try {
-            // Generate a random user ID for this session
-            const userId = `user_${Math.floor(Math.random() * 1000000)}`;
-            const url = `${TOKEN_ENDPOINT}?name=Guest&user_id=${userId}&agent=${agentName}&email=guest@example.com`;
+            // Send the user info to the backend
+            const url = `${TOKEN_ENDPOINT}?name=${name}&user_id=${userId}&agent=${agentName}&email=${email}`;
 
             const response = await fetch(url, { mode: 'cors' });
 
@@ -36,7 +68,7 @@ export function useLiveKitConnection() {
         } finally {
             setIsConnecting(false);
         }
-    }, []);
+    }, [name, userId, email]);
 
     const disconnect = useCallback(() => {
         setToken('');

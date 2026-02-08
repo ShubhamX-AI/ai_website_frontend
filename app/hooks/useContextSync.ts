@@ -9,7 +9,7 @@ export function useContextSync(
     const { localParticipant } = useLocalParticipant();
     const room = useRoomContext();
     const { audioTrack: agentTrack } = useVoiceAssistant();
-    
+
     const syncPerformed = useRef(false);
     const syncRef = useRef<() => void>(() => { });
 
@@ -34,7 +34,7 @@ export function useContextSync(
             }));
 
         // [NEW] Get User Info from Local Storage
-        let userInfo = { name: "", id: "" };
+        let userInfo = { user_name: "", user_id: "" };
         try {
             const storedUser = localStorage.getItem("user_info");
             if (storedUser) {
@@ -86,7 +86,7 @@ export function useContextSync(
     useEffect(() => {
         syncRef.current = syncUIContext;
     }, [syncUIContext]);
-    
+
     // Wire up the onStreamComplete callback
     useEffect(() => {
         onStreamCompleteRef.current = syncUIContext;
