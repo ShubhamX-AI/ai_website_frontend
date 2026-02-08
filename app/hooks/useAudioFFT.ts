@@ -16,7 +16,6 @@ export const useAudioFFT = (track?: MediaStreamTrack | null, options: AudioFFTOp
     } = options;
 
     const [data, setData] = useState<Uint8Array | null>(null);
-    const [volume, setVolume] = useState(0);
     const [isSpeaking, setIsSpeaking] = useState(false);
 
     const audioContextRef = useRef<AudioContext | null>(null);
@@ -27,7 +26,6 @@ export const useAudioFFT = (track?: MediaStreamTrack | null, options: AudioFFTOp
     useEffect(() => {
         if (!track) {
             setData(null);
-            setVolume(0);
             setIsSpeaking(false);
             return;
         }
@@ -66,7 +64,6 @@ export const useAudioFFT = (track?: MediaStreamTrack | null, options: AudioFFTOp
                         sum += dataArray[i];
                     }
                     const avgVol = sum / range;
-                    setVolume(avgVol);
                     setIsSpeaking(avgVol > minVolumeThreshold);
 
                     // Handle sampling if barCount is provided
@@ -102,5 +99,5 @@ export const useAudioFFT = (track?: MediaStreamTrack | null, options: AudioFFTOp
         };
     }, [track, fftSize, smoothingTimeConstant, minVolumeThreshold, barCount]);
 
-    return { data, volume, isSpeaking };
+    return { data, isSpeaking };
 };

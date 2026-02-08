@@ -178,13 +178,13 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
 
                 {/* Empty State / Prompt if no card */}
                 {/* Empty State / Visualizer if no card */}
-                {flashcards.length === 0 && (
+                {/* flashcards.length === 0 && (
                     <div className="flex flex-col items-center justify-center">
                         <div className="relative h-48 w-64 sm:h-64 sm:w-80 md:h-80 md:w-[400px]">
                             <BarVisualizer agentTrack={activeTrack} userTrack={userTrack} />
                         </div>
                     </div>
-                )}
+                ) */}
             </div>
 
             {/* Subtitles Overlay */}
