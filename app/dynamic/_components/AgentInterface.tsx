@@ -6,6 +6,8 @@ import { BarVisualizer } from './BarVisualizer';
 import { Flashcard } from './Flashcard';
 import { ContactForm } from './ContactForm';
 import { ContactFormSubmit } from './ContactFormSubmit';
+import { JobApplicationForm } from './JobApplicationForm';
+import { JobApplicationSubmit } from './JobApplicationSubmit';
 import { StarterScreen } from './StarterScreen';
 import { RoomAudioRenderer } from '@livekit/components-react';
 import dynamic from 'next/dynamic';
@@ -193,7 +195,9 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
             m.type === 'contact_form_submit' ||
             m.type === 'map_polyline' ||
             m.type === 'global_presence' ||
-            m.type === 'nearby_offices'
+            m.type === 'nearby_offices' ||
+            m.type === 'job_application_preview' ||
+            m.type === 'job_application_submit'
         );
         return visualMsgs.length > 0 ? visualMsgs[visualMsgs.length - 1] : null;
     }, [messages]);
@@ -233,6 +237,20 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
 
     const nearbyOfficesMessage = useMemo(() => {
         if (latestVisualMessage?.type === 'nearby_offices') {
+            return latestVisualMessage;
+        }
+        return null;
+    }, [latestVisualMessage]);
+
+    const jobApplicationPreviewMessage = useMemo(() => {
+        if (latestVisualMessage?.type === 'job_application_preview') {
+            return latestVisualMessage;
+        }
+        return null;
+    }, [latestVisualMessage]);
+
+    const jobApplicationSubmitMessage = useMemo(() => {
+        if (latestVisualMessage?.type === 'job_application_submit') {
             return latestVisualMessage;
         }
         return null;
@@ -383,6 +401,14 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                             key={nearbyOfficesMessage.id}
                             data={nearbyOfficesMessage.nearbyOfficesData}
                         />
+                    </div>
+                ) : latestVisualMessage?.type === 'job_application_submit' && jobApplicationSubmitMessage?.jobApplicationData ? (
+                    <div className="flex w-full justify-center">
+                        <JobApplicationSubmit key={jobApplicationSubmitMessage.id} data={jobApplicationSubmitMessage.jobApplicationData} />
+                    </div>
+                ) : latestVisualMessage?.type === 'job_application_preview' && jobApplicationPreviewMessage?.jobApplicationData ? (
+                    <div className="flex w-full justify-center">
+                        <JobApplicationForm key={jobApplicationPreviewMessage.id} data={jobApplicationPreviewMessage.jobApplicationData} />
                     </div>
                 ) : flashcards.length > 0 ? (
                     <CardDisplay cards={flashcards} />

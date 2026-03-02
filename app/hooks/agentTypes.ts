@@ -45,6 +45,17 @@ export interface ContactFormData {
     contact_details?: string;
 }
 
+export interface JobApplicationData {
+    user_name?: string;
+    user_email?: string;
+    user_phone?: string;
+    job_details?: string;
+    resume?: string; // Base64 or URL
+    github?: string;
+    linkedin?: string;
+    portfolio?: string;
+}
+
 export interface LocationRequestData {
     reason?: string; // e.g. "finding nearby offices" — shown to the user
 }
@@ -77,7 +88,7 @@ export interface NearbyOfficesData {
 export interface ChatMessage {
     id: string;
     sender: 'user' | 'agent';
-    type: 'text' | 'flashcard' | 'contact_form' | 'contact_form_submit' | 'location_request' | 'map_polyline' | 'global_presence' | 'nearby_offices';
+    type: 'text' | 'flashcard' | 'contact_form' | 'contact_form_submit' | 'location_request' | 'map_polyline' | 'global_presence' | 'nearby_offices' | 'job_application_preview' | 'job_application_submit';
     text?: string;
     cardData?: {
         title: string;
@@ -90,6 +101,7 @@ export interface ChatMessage {
     mapPolylineData?: MapPolylineData;
     globalPresenceData?: GlobalPresenceData;
     nearbyOfficesData?: NearbyOfficesData;
+    jobApplicationData?: JobApplicationData;
     isInterim?: boolean;
     timestamp: number;
 }

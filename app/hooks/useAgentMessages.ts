@@ -345,6 +345,56 @@ export function useAgentMessages() {
                         return next;
                     });
                 }
+                else if (topic === 'ui.job_application' || data.type === 'job_application_preview' || data.type === 'job_application_submit') {
+                    const isSubmit = data.type === 'job_application_submit';
+                    const msgType = isSubmit ? 'job_application_submit' : 'job_application_preview';
+                    const id = `${msgType}-${Date.now()}`;
+                    console.log(`--- JOB APPLICATION (${isSubmit ? 'submitted' : 'preview'}) ---`, data);
+
+                    updateMessages((prev) => {
+                        const next = new Map(prev);
+
+                        // Clear previous job_application previews on submit so screen is clean after dismiss
+                        if (isSubmit) {
+                            for (const [key, msg] of next.entries()) {
+                                if (msg.type === 'job_application_preview') {
+                                    next.delete(key);
+                                }
+                            }
+                        }
+
+                        next.set(id, {
+                            id,
+                            type: msgType,
+                            sender: 'agent',
+                            timestamp: Date.now(),
+                            isInterim: false,
+                            jobApplicationData: {
+                                user_name: data.data?.user_name || data.user_name,
+                                user_email: data.data?.user_email || data.user_email,
+                                user_phone: data.data?.user_phone || data.user_phone,
+                                job_details: data.data?.job_details || data.job_details,
+                                // These might be empty initially in preview
+                                resume: data.data?.resume || data.resume,
+                                github: data.data?.github || data.github,
+                                linkedin: data.data?.linkedin || data.linkedin,
+                                portfolio: data.data?.portfolio || data.portfolio,
+                            }
+                        });
+                        return next;
+                    });
+
+                    // Auto-dismiss submit UI after 2.5 seconds
+                    if (isSubmit) {
+                        setTimeout(() => {
+                            updateMessages((prev) => {
+                                const next = new Map(prev);
+                                next.delete(id);
+                                return next;
+                            });
+                        }, 2500);
+                    }
+                }
             } catch (e) { /* ignore non-json or noise */ }
         };
 
