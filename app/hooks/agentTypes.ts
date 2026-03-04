@@ -56,6 +56,22 @@ export interface JobApplicationData {
     portfolio?: string;
 }
 
+export interface MeetingFormData {
+    recipient_email: string;
+    subject: string;
+    description: string;
+    location: string;
+    start_time: string;
+    duration_hours: number;
+}
+
+export interface MeetingInviteSubmitData {
+    recipient_email: string;
+    subject: string;
+    start_time: string;
+    status: string;
+}
+
 export interface LocationRequestData {
     reason?: string; // e.g. "finding nearby offices" — shown to the user
 }
@@ -88,7 +104,7 @@ export interface NearbyOfficesData {
 export interface ChatMessage {
     id: string;
     sender: 'user' | 'agent';
-    type: 'text' | 'flashcard' | 'contact_form' | 'contact_form_submit' | 'location_request' | 'map_polyline' | 'global_presence' | 'nearby_offices' | 'job_application_preview' | 'job_application_submit';
+    type: 'text' | 'flashcard' | 'contact_form' | 'contact_form_submit' | 'location_request' | 'map_polyline' | 'global_presence' | 'nearby_offices' | 'job_application_preview' | 'job_application_submit' | 'meeting_form' | 'meeting_form_submit';
     text?: string;
     cardData?: {
         title: string;
@@ -102,6 +118,8 @@ export interface ChatMessage {
     globalPresenceData?: GlobalPresenceData;
     nearbyOfficesData?: NearbyOfficesData;
     jobApplicationData?: JobApplicationData;
+    meetingFormData?: MeetingFormData;
+    meetingInviteSubmitData?: MeetingInviteSubmitData;
     isInterim?: boolean;
     timestamp: number;
 }
