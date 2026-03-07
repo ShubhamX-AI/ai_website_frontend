@@ -8,6 +8,8 @@ import { ContactForm } from './ContactForm';
 import { ContactFormSubmit } from './ContactFormSubmit';
 import { JobApplicationForm } from './JobApplicationForm';
 import { JobApplicationSubmit } from './JobApplicationSubmit';
+import { MeetingForm } from './MeetingForm';
+import { MeetingFormSubmit } from './MeetingFormSubmit';
 import { StarterScreen } from './StarterScreen';
 import { RoomAudioRenderer } from '@livekit/components-react';
 import dynamic from 'next/dynamic';
@@ -81,17 +83,17 @@ const CardDisplay = ({ cards }: { cards: ChatMessage[] }) => {
 
     const count = validCards.length;
 
-    let gridClasses = "grid gap-4 md:gap-6 w-full mx-auto ";
+    let gridClasses = "grid w-full auto-rows-max items-start gap-4 md:gap-6 mx-auto ";
     if (count === 1) {
-        gridClasses += "grid-cols-1 max-w-2xl";
+        gridClasses += "grid-cols-1 max-w-[min(92vw,60rem)]";
     } else if (count === 2) {
-        gridClasses += "grid-cols-1 sm:grid-cols-2 max-w-5xl";
+        gridClasses += "grid-cols-1 md:grid-cols-2 max-w-5xl";
     } else if (count === 3) {
-        gridClasses += "grid-cols-1 sm:grid-cols-3 max-w-7xl";
+        gridClasses += "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 max-w-7xl";
     } else if (count === 4) {
-        gridClasses += "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 max-w-5xl"; // 2x2 grid
+        gridClasses += "grid-cols-1 md:grid-cols-2 max-w-5xl";
     } else {
-        gridClasses += "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-[95vw] xl:max-w-screen-2xl";
+        gridClasses += "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 max-w-[95vw] xl:max-w-screen-2xl";
     }
 
     return (
@@ -101,12 +103,18 @@ const CardDisplay = ({ cards }: { cards: ChatMessage[] }) => {
                 className={`relative z-10 px-4 md:px-8 ${gridClasses}`}
             >
                 <AnimatePresence mode="popLayout">
-                    {validCards.map((card, idx) => {
-                        let itemClass = "flex w-full h-full";
+                    {validCards.map((card) => {
+                        const hasMedia = Boolean(
+                            card.cardData?.image?.url ||
+                            card.cardData?.dynamicMedia?.query ||
+                            (card.cardData?.dynamicMedia?.urls && card.cardData.dynamicMedia.urls.length > 0)
+                        );
+
+                        const itemClass = "flex w-full self-start items-start";
 
                         // Determine internal Flashcard layout based on grid scenario
                         let layoutProp: 'default' | 'horizontal' = 'default';
-                        if (count === 1) {
+                        if (count === 1 && hasMedia) {
                             layoutProp = 'horizontal';
                         }
 
@@ -194,6 +202,8 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
             m.type === 'flashcard' ||
             m.type === 'contact_form' ||
             m.type === 'contact_form_submit' ||
+            m.type === 'meeting_form' ||
+            m.type === 'meeting_form_submit' ||
             m.type === 'map_polyline' ||
             m.type === 'global_presence' ||
             m.type === 'nearby_offices' ||
@@ -217,6 +227,20 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
 
     const contactFormSubmitMessage = useMemo(() => {
         if (latestVisualMessage?.type === 'contact_form_submit') {
+            return latestVisualMessage;
+        }
+        return null;
+    }, [latestVisualMessage]);
+
+    const meetingFormMessage = useMemo(() => {
+        if (latestVisualMessage?.type === 'meeting_form') {
+            return latestVisualMessage;
+        }
+        return null;
+    }, [latestVisualMessage]);
+
+    const meetingFormSubmitMessage = useMemo(() => {
+        if (latestVisualMessage?.type === 'meeting_form_submit') {
             return latestVisualMessage;
         }
         return null;
@@ -376,6 +400,14 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                 ) : latestVisualMessage?.type === 'contact_form' && contactFormMessage?.contactFormData ? (
                     <div className="flex w-full justify-center">
                         <ContactForm key={contactFormMessage.id} data={contactFormMessage.contactFormData} />
+                    </div>
+                ) : latestVisualMessage?.type === 'meeting_form_submit' && meetingFormSubmitMessage?.meetingInviteSubmitData ? (
+                    <div className="flex w-full justify-center">
+                        <MeetingFormSubmit key={meetingFormSubmitMessage.id} data={meetingFormSubmitMessage.meetingInviteSubmitData} />
+                    </div>
+                ) : latestVisualMessage?.type === 'meeting_form' && meetingFormMessage?.meetingFormData ? (
+                    <div className="flex w-full justify-center">
+                        <MeetingForm key={meetingFormMessage.id} data={meetingFormMessage.meetingFormData} />
                     </div>
                 ) : latestVisualMessage?.type === 'map_polyline' && mapPolylineMessage?.mapPolylineData ? (
                     <div className="flex w-full max-w-4xl justify-center">

@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
+import { motion, type Variants } from 'framer-motion';
 import { FlashcardStyle } from '../../hooks/agentTypes';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -35,7 +35,16 @@ const getIntentColors = (intent: string = 'neutral', fallbackColor: string) => {
     return colorKey;
 };
 
-const colorMap: Record<string, any> = {
+type CardColors = {
+    bg: string;
+    text: string;
+    ring: string;
+    glow: string;
+    border: string;
+    gradient: string;
+};
+
+const colorMap: Record<string, CardColors> = {
     emerald: { bg: 'bg-emerald-50', text: 'text-emerald-600', ring: 'ring-emerald-100', glow: 'bg-emerald-500/10', border: 'border-emerald-200', gradient: 'from-emerald-500 to-emerald-600' },
     blue: { bg: 'bg-blue-50', text: 'text-blue-600', ring: 'ring-blue-100', glow: 'bg-blue-500/10', border: 'border-blue-200', gradient: 'from-blue-500 to-blue-600' },
     amber: { bg: 'bg-amber-50', text: 'text-amber-600', ring: 'ring-amber-100', glow: 'bg-amber-500/10', border: 'border-amber-200', gradient: 'from-amber-500 to-amber-600' },
@@ -56,6 +65,14 @@ const guessColor = (keyword: string) => {
     if (k.includes('error') || k.includes('critical')) return 'rose';
     if (k.includes('ai') || k.includes('smart')) return 'violet';
     return 'zinc';
+};
+
+const normalizeAspectRatio = (aspectRatio?: string): NonNullable<FlashcardProps['media']>['aspectRatio'] => {
+    if (aspectRatio === 'portrait' || aspectRatio === 'square' || aspectRatio === 'auto') {
+        return aspectRatio;
+    }
+
+    return 'video';
 };
 
 export const Flashcard = React.memo(({
@@ -97,10 +114,19 @@ export const Flashcard = React.memo(({
         small: 'p-2 gap-2 w-full max-w-[180px] md:p-3 md:max-w-[240px]',
         medium: 'p-2.5 gap-2.5 w-full max-w-[240px] md:p-6 md:gap-5 md:max-w-[400px]',
         large: 'p-4 w-full max-w-4xl md:p-8',
-        bento: 'p-4 md:p-6 w-full h-full'
+        bento: 'p-4 md:p-6 w-full'
     };
 
-    const variants = {
+    const mediaData: FlashcardProps['media'] | undefined = resolvedMedia || (image?.url ? {
+        urls: [image.url],
+        aspectRatio: normalizeAspectRatio(image.aspectRatio),
+        mediaType: 'image'
+    } : undefined);
+    const hasMedia = Boolean(mediaData?.query || (mediaData?.urls && mediaData.urls.length > 0));
+    const showHorizontalMedia = layout === 'horizontal' && hasMedia;
+    const showStackedMedia = layout !== 'horizontal' && hasMedia;
+
+    const variants: Variants = {
         hidden: { opacity: 0, y: 10, scale: 0.98 },
         visible: {
             opacity: 1,
@@ -108,19 +134,23 @@ export const Flashcard = React.memo(({
             scale: 1,
             transition: { type: 'spring', stiffness: 350, damping: 25 }
         },
-        exit: { opacity: 0, scale: 0.95, transition: { duration: 0.1 } },
-        pop: {
-            hidden: { opacity: 0, scale: 0.5 },
-            visible: { opacity: 1, scale: 1, transition: { type: 'spring' } }
-        },
-        slide: {
-            hidden: { opacity: 0, x: -20 },
-            visible: { opacity: 1, x: 0 }
-        }
+        exit: { opacity: 0, scale: 0.95, transition: { duration: 0.1 } }
     };
 
-    const selectedVariant = animation_style === 'pop' ? variants.pop :
-        animation_style === 'slide' ? variants.slide : variants;
+    const popVariants: Variants = {
+        hidden: { opacity: 0, scale: 0.5 },
+        visible: { opacity: 1, scale: 1, transition: { type: 'spring' } },
+        exit: { opacity: 0, scale: 0.95, transition: { duration: 0.1 } }
+    };
+
+    const slideVariants: Variants = {
+        hidden: { opacity: 0, x: -20 },
+        visible: { opacity: 1, x: 0 },
+        exit: { opacity: 0, scale: 0.95, transition: { duration: 0.1 } }
+    };
+
+    const selectedVariant: Variants = animation_style === 'pop' ? popVariants :
+        animation_style === 'slide' ? slideVariants : variants;
 
     const renderContent = (text: string) => {
         if (!text) return null;
@@ -152,47 +182,38 @@ export const Flashcard = React.memo(({
             initial="hidden"
             animate="visible"
             exit="exit"
-            variants={selectedVariant as any}
+            variants={selectedVariant}
             className={`
                 relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem]
                 ${themeClasses[normalizedTheme as keyof typeof themeClasses]} 
                 ${sizeClasses[normalizedSize]}
-                group transition-colors h-full flex flex-col w-full
+                group flex w-full flex-col self-start transition-colors
             `}
         >
             <div className={`absolute -right-20 -top-20 h-40 w-40 md:h-64 md:w-64 rounded-full ${colors.glow} blur-[30px] md:blur-[60px] opacity-25 md:opacity-40`} />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.46)_0%,rgba(255,255,255,0.14)_28%,rgba(255,255,255,0)_62%)]" />
 
-            {/* Inner Content flex-grow ensures space is beautifully utilized if card stretches */}
-            <div className={`relative z-10 flex flex-col flex-grow
-                ${layout === 'horizontal' ? 'md:flex-row gap-4 md:gap-6 md:items-center p-2' : 'gap-3 md:gap-4'} 
+            <div className={`relative z-10 flex flex-col
+                ${layout === 'horizontal' ? 'gap-4 md:flex-row md:items-center md:gap-6' : 'gap-4 md:gap-5'} 
                 ${layout === 'centered' ? 'justify-center text-center items-center' : ''}
             `}>
 
-                {/* Horizontal Layout Image: Standardized to slightly wider card ratio instead of cramped portrait */}
-                {layout === 'horizontal' && (image || resolvedMedia) && (
-                    <div className="w-full sm:w-[180px] md:w-[220px] shrink-0 mx-auto md:my-auto">
-                        <div className={`rounded-xl md:rounded-[1.5rem] overflow-hidden relative w-full h-full p-2
-                            ${resolvedMedia?.aspectRatio === 'portrait' ? 'aspect-[3/4]' : 'aspect-video'}
-                         `}>
+                {showHorizontalMedia && (
+                    <div className="w-full shrink-0 md:w-[min(40%,20rem)] md:max-w-[20rem]">
+                        <div className="rounded-[1.35rem] bg-white/65 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] ring-1 ring-white/70 md:rounded-[1.6rem]">
                             <RichMedia
-                                urls={resolvedMedia?.urls}
-                                query={resolvedMedia?.query || (image ? undefined : title)}
-                                source={resolvedMedia?.source}
-                                aspectRatio={resolvedMedia?.aspectRatio || "video"}
+                                urls={mediaData?.urls}
+                                query={mediaData?.query || title}
+                                source={mediaData?.source}
+                                aspectRatio={mediaData?.aspectRatio || 'video'}
                                 alt={title}
-                                mediaType={resolvedMedia?.mediaType}
+                                mediaType={mediaData?.mediaType}
                             />
-                            {!resolvedMedia && image?.url && (
-                                <img src={image.url} alt={image.alt} className="absolute inset-0 w-full h-full object-contain p-1 transition-transform duration-700 group-hover:scale-110" />
-                            )}
                         </div>
                     </div>
                 )}
 
-                {/* Main Content Column */}
-                <div className={`flex flex-col flex-grow ${layout === 'horizontal' ? 'flex-1 min-w-0 justify-center' : 'w-full'}`}>
-
-                    {/* Header */}
+                <div className={`flex flex-col ${layout === 'horizontal' ? 'min-w-0 flex-1 justify-center' : 'w-full'}`}>
                     <div className={`flex items-start ${layout === 'centered' ? 'justify-center w-full relative' : 'justify-between'}`}>
                         <div className={`flex items-center gap-2 md:gap-3 ${layout === 'centered' ? 'flex-col gap-3' : ''}`}>
                             <div className={`
@@ -225,29 +246,20 @@ export const Flashcard = React.memo(({
                         )}
                     </div>
 
-                    {/* Vertical Media: DYNAMIC Aspect Ratio ensures 'Full Size' visibility without cropping */}
-                    {layout !== 'horizontal' && (image || resolvedMedia) && (
-                        <div className={`mt-3 mb-1 w-full rounded-xl md:rounded-[1.8rem] overflow-hidden relative shrink-0 p-3
-                            ${resolvedMedia?.aspectRatio === 'portrait' ? 'aspect-[3/4]' :
-                                resolvedMedia?.aspectRatio === 'square' ? 'aspect-square' :
-                                    'aspect-video'}
-                        `}>
+                    {showStackedMedia && (
+                        <div className="mt-4 rounded-[1.35rem] bg-white/65 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] ring-1 ring-white/70 md:rounded-[1.7rem]">
                             <RichMedia
-                                urls={resolvedMedia?.urls}
-                                query={resolvedMedia?.query || (image ? undefined : title)}
-                                source={resolvedMedia?.source}
-                                aspectRatio={resolvedMedia?.aspectRatio || "video"} // <-- Use provided aspect ratio or default to video
+                                urls={mediaData?.urls}
+                                query={mediaData?.query || title}
+                                source={mediaData?.source}
+                                aspectRatio={mediaData?.aspectRatio || 'video'}
                                 alt={title}
-                                mediaType={resolvedMedia?.mediaType}
+                                mediaType={mediaData?.mediaType}
                             />
-                            {!resolvedMedia && image?.url && (
-                                <img src={image.url} alt={image.alt} className="absolute inset-0 w-full h-full object-contain p-1" />
-                            )}
                         </div>
                     )}
 
-                    {/* Content Section: flex-grow expands smoothly to bottom border if card is stretched */}
-                    <div className={`text-sm ${normalizedTheme === 'neon' ? 'text-zinc-300' : 'text-zinc-600'} flex-grow ${layout === 'horizontal' ? 'mt-2' : 'mt-2'}`}>
+                    <div className={`mt-3 text-sm ${normalizedTheme === 'neon' ? 'text-zinc-300' : 'text-zinc-600'}`}>
                         {renderContent(value)}
                     </div>
                 </div>
@@ -255,3 +267,5 @@ export const Flashcard = React.memo(({
         </motion.div>
     );
 });
+
+Flashcard.displayName = 'Flashcard';

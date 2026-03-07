@@ -306,6 +306,59 @@ export function useAgentMessages() {
                         }, 2000);
                     }
                 }
+                else if (topic === 'ui.meeting_form' || data.type === 'meeting_form' || data.type === 'meeting_invite_submit') {
+                    const isSubmit = data.type === 'meeting_invite_submit';
+                    const msgType = isSubmit ? 'meeting_form_submit' : 'meeting_form';
+                    const id = `${msgType}-${Date.now()}`;
+                    console.log(`--- MEETING FORM (${isSubmit ? 'submitted' : 'preview'}) ---`, data);
+
+                    updateMessages((prev) => {
+                        const next = new Map(prev);
+
+                        // Clear previous meeting_form previews on submit
+                        if (isSubmit) {
+                            for (const [key, msg] of next.entries()) {
+                                if (msg.type === 'meeting_form') {
+                                    next.delete(key);
+                                }
+                            }
+                        }
+
+                        next.set(id, {
+                            id,
+                            type: msgType,
+                            sender: 'agent',
+                            timestamp: Date.now(),
+                            isInterim: false,
+                            meetingFormData: !isSubmit ? {
+                                recipient_email: data.data?.recipient_email || data.recipient_email,
+                                subject: data.data?.subject || data.subject,
+                                description: data.data?.description || data.description,
+                                location: data.data?.location || data.location,
+                                start_time: data.data?.start_time || data.start_time,
+                                duration_hours: data.data?.duration_hours || data.duration_hours,
+                            } : undefined,
+                            meetingInviteSubmitData: isSubmit ? {
+                                recipient_email: data.data?.recipient_email || data.recipient_email,
+                                subject: data.data?.subject || data.subject,
+                                start_time: data.data?.start_time || data.start_time,
+                                status: data.data?.status || data.status,
+                            } : undefined,
+                        });
+                        return next;
+                    });
+
+                    // Auto-dismiss submit UI after 2.5 seconds
+                    if (isSubmit) {
+                        setTimeout(() => {
+                            updateMessages((prev) => {
+                                const next = new Map(prev);
+                                next.delete(id);
+                                return next;
+                            });
+                        }, 2500);
+                    }
+                }
                 else if (topic === 'ui.global_presense' || data.type === 'global_presence') {
                     const id = `global-presence-${Date.now()}`;
                     console.log('--- GLOBAL PRESENCE (INCOMING) ---', data);
