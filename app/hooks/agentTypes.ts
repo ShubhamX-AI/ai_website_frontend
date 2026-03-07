@@ -1,32 +1,15 @@
 export type AgentState = 'listening' | 'speaking' | 'thinking' | 'idle';
 export type InteractionMode = 'voice' | 'text';
 
+export interface FlashcardMedia {
+    urls?: string[];
+    query?: string;
+    source?: string;
+}
+
 export interface FlashcardStyle {
-    accentColor?: string;
-    icon?: string | { type: 'static'; ref: string; fallback?: string };
-    theme?: 'glass' | 'solid' | 'gradient' | 'neon' | 'highlight' | 'info' | 'light';
-    size?: 'tiny' | 'extra-small' | 'small' | 'medium' | 'large' | 'sm' | 'md' | 'lg' | 'bento';
-    layout?: 'default' | 'horizontal' | 'centered' | 'media-top';
-    image?: {
-        url: string;
-        alt: string;
-        aspectRatio?: string;
-    };
-    // [NEW] Dynamic UI Extensions
+    icon?: { type: 'static'; ref: string; fallback?: string };
     visual_intent?: 'neutral' | 'urgent' | 'success' | 'warning' | 'processing' | 'cyberpunk';
-    animation_style?: 'slide' | 'pop' | 'fade' | 'flip' | 'scale';
-    smartIcon?: {
-        type: 'animated' | 'static';
-        ref: string; // e.g. "shield-check" (Lucide) or "lottie-shield" (slug)
-        fallback?: string;
-    };
-    dynamicMedia?: {
-        urls?: string[];
-        query?: string;
-        source?: 'unsplash' | 'pexels';
-        aspectRatio?: 'auto' | 'video' | 'square' | 'portrait';
-        mediaType?: 'image' | 'video';
-    };
 }
 
 
@@ -111,6 +94,7 @@ export interface ChatMessage {
         value: string;
         stream_id?: string;
         card_index?: number;
+        media?: FlashcardMedia;
     } & FlashcardStyle;
     contactFormData?: ContactFormData;
     locationRequestData?: LocationRequestData;

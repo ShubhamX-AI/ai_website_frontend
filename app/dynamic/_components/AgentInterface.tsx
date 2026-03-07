@@ -105,14 +105,13 @@ const CardDisplay = ({ cards }: { cards: ChatMessage[] }) => {
                 <AnimatePresence mode="popLayout">
                     {validCards.map((card) => {
                         const hasMedia = Boolean(
-                            card.cardData?.image?.url ||
-                            card.cardData?.dynamicMedia?.query ||
-                            (card.cardData?.dynamicMedia?.urls && card.cardData.dynamicMedia.urls.length > 0)
+                            card.cardData?.media?.query ||
+                            (card.cardData?.media?.urls && card.cardData.media.urls.length > 0)
                         );
 
                         const itemClass = "flex w-full self-start items-start";
 
-                        // Determine internal Flashcard layout based on grid scenario
+                        // Determine internal Flashcard layout based on grid context — NOT from backend
                         let layoutProp: 'default' | 'horizontal' = 'default';
                         if (count === 1 && hasMedia) {
                             layoutProp = 'horizontal';
@@ -140,8 +139,8 @@ const CardDisplay = ({ cards }: { cards: ChatMessage[] }) => {
                             >
                                 <Flashcard
                                     {...card.cardData}
-                                    size="bento"
                                     layout={layoutProp}
+                                    card_index={card.cardData?.card_index ?? 0}
                                     layoutId={card.id}
                                 />
                             </motion.div>

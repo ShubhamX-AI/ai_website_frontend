@@ -119,22 +119,15 @@ export function useAgentMessages() {
                             cardData: {
                                 title: data.title || "Information",
                                 value: data.value || JSON.stringify(data),
-                                accentColor: data.accentColor,
-                                icon: data.icon,
-                                theme: data.theme,
-                                size: data.size,
-                                layout: data.layout,
-                                image: data.image,
                                 stream_id: streamId,
                                 card_index: data.card_index,
-                                // [NEW] Map new fields
                                 visual_intent: data.visual_intent,
-                                animation_style: data.animation_style,
-                                smartIcon: data.icon ? (typeof data.icon === 'string' ? { type: 'static', ref: data.icon } : data.icon) : undefined,
-                                dynamicMedia: data.media ? {
-                                    ...data.media,
-                                    urls: data.urls || data.media?.urls // Handle both flat 'urls' and nested 'media.urls'
-                                } : undefined
+                                icon: data.icon,
+                                media: data.media ? {
+                                    urls: data.media.urls,
+                                    query: data.media.query,
+                                    source: data.media.source,
+                                } : undefined,
                             },
                             sender: 'agent',
                             timestamp: Date.now(),
