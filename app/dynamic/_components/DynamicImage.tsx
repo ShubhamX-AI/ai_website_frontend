@@ -39,13 +39,24 @@ export const DynamicImage: React.FC<DynamicImageProps> = ({
 
             try {
                 setIsLoading(true);
-                const response = await searchPixabayImages(query, {
+                let response = await searchPixabayImages(query, {
                     imageType: 'photo',
                     orientation: 'all',
                     perPage: 3,
-                    page: Math.floor(Math.random() * 10) + 1,
+                    page: 1,
                     safeSearch: true,
                 });
+
+                if (response.hits && response.hits.length === 0) {
+                    const fallbackQuery = query.split(' ')[0] || 'business';
+                    response = await searchPixabayImages(fallbackQuery, {
+                        imageType: 'photo',
+                        orientation: 'all',
+                        perPage: 3,
+                        page: Math.floor(Math.random() * 3) + 1,
+                        safeSearch: true,
+                    });
+                }
 
                 if (response.hits && response.hits.length > 0) {
                     setImageUrl(response.hits[0].webformatURL);
@@ -56,7 +67,6 @@ export const DynamicImage: React.FC<DynamicImageProps> = ({
                 console.error('Pixabay API error:', err);
                 setImageUrl(`https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=90&w=${requestWidth}&auto=format&fit=max`);
             } finally {
-
                 setIsLoading(false);
             }
         };

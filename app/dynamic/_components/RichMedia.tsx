@@ -223,12 +223,12 @@ export const RichMedia: React.FC<RichMediaProps> = ({
 
     if (query) {
         return (
-            <div className={`${baseContainer} aspect-auto min-h-[220px] md:min-h-[260px]`}>
+            <div className={`${baseContainer} flex flex-col aspect-auto min-h-[220px] md:min-h-[260px]`}>
                 <DynamicImage
                     query={query}
                     source={source as any}
                     alt={alt || 'Dynamic Search Results'}
-                    className="h-full w-full"
+                    className="flex-1 w-full"
                 />
             </div>
         );
