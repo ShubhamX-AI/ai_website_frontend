@@ -94,31 +94,54 @@ interface MapDisplayProps {
     polyline: string;
     origin?: string;
     destination?: string;
-    travelMode?: 'driving' | 'walking' | 'bicycling' | 'transit';
+    travelMode?: 'DRIVE' | 'WALK' | 'BICYCLE' | 'TRANSIT' | 'TWO_WHEELER';
     distance?: string;
     duration?: string;
+    mode_label?: string;
+    destination_image_url?: string;
 }
 
 const TravelModeIcon = ({ mode }: { mode?: string }) => {
-    switch (mode) {
-        case 'walking':
+    const normalized = mode?.toUpperCase();
+    switch (normalized) {
+        case 'WALK':
+        case 'WALKING':
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                    <path d="M13.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM6.75 6a.75.75 0 0 0-.75.75v6.75a.75.75 0 0 0 1.5 0v-4.39l1.583 1.583a.75.75 0 0 0 1.06 0l2.25-2.25a.75.75 0 0 0 0-1.06L9.64 4.879A2.25 2.25 0 0 0 8.05 4.25H6.75ZM15 7.5a.75.75 0 0 1 .75-.75h.75a2.25 2.25 0 0 1 2.25 2.25v1.5a.75.75 0 0 1-1.5 0v-1.5a.75.75 0 0 0-.75-.75h-.75A.75.75 0 0 1 15 7.5ZM5.25 15.75a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5H6a.75.75 0 0 1-.75-.75ZM13.5 18a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5h-3A.75.75 0 0 1 13.5 18ZM6.75 18.75a.75.75 0 0 1 .75-.75h5.25a.75.75 0 0 1 0 1.5H7.5a.75.75 0 0 1-.75-.75Z" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <circle cx="12" cy="5" r="1.5" /><path d="M9 20l2-5m0 0l1-3m-1 3h4l2 5M13 12l-2-2-3 4" />
                 </svg>
             );
-        case 'driving':
+        case 'BICYCLE':
+        case 'BICYCLING':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <circle cx="5.5" cy="17.5" r="3.5" /><circle cx="18.5" cy="17.5" r="3.5" /><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2" />
+                </svg>
+            );
+        case 'TRANSIT':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <rect x="4" y="3" width="16" height="16" rx="2" /><path d="M4 11h16M12 3v8M8 19l-2 3M16 19l2 3" /><circle cx="8" cy="15" r="1" /><circle cx="16" cy="15" r="1" />
+                </svg>
+            );
+        case 'TWO_WHEELER':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <circle cx="5" cy="17" r="3" /><circle cx="19" cy="17" r="3" /><path d="M9 17h6M5 14l4-7h4l2 3h4" />
+                </svg>
+            );
+        case 'DRIVE':
+        case 'DRIVING':
         default:
             return (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                    <path d="M11.25 4.5a.75.75 0 0 1 .75-.75h.75a.75.75 0 0 1 0 1.5h-.75a.75.75 0 0 1-.75-.75ZM18.664 6.352a.75.75 0 0 1 .536.216l.3.3a.75.75 0 0 1-1.06 1.06l-.3-.3a.75.75 0 0 1 .524-1.276ZM4.8 6.352a.75.75 0 0 1 .524 1.276l-.3.3a.75.75 0 0 1-1.06-1.06l.3-.3a.75.75 0 0 1 .536-.216ZM12 7.5a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z" />
-                    <path fillRule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0Zm9-7.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15Z" clipRule="evenodd" />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M5 17h14M5 17a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2" /><circle cx="7.5" cy="17" r="1.5" /><circle cx="16.5" cy="17" r="1.5" />
                 </svg>
             );
     }
 }
 
-export const MapDisplay = React.memo(({ polyline, origin, destination, travelMode, distance, duration }: MapDisplayProps) => {
+export const MapDisplay = React.memo(({ polyline, origin, destination, travelMode, distance, duration, mode_label, destination_image_url }: MapDisplayProps) => {
     const positions = useMemo(() => decodePolyline(polyline),[polyline]);
     
     const bounds = useMemo(() => {
@@ -189,7 +212,7 @@ export const MapDisplay = React.memo(({ polyline, origin, destination, travelMod
             <div className="absolute top-4 left-4 z-[1000] flex gap-2">
                 <div className="flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-1.5 text-white shadow-lg backdrop-blur-md">
                     <TravelModeIcon mode={travelMode} />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">{travelMode || 'driving'}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{mode_label || travelMode || 'DRIVE'}</span>
                 </div>
                 {(distance || duration) && (
                     <div className="flex items-center gap-3 rounded-xl bg-white/90 px-3 py-1.5 text-zinc-900 shadow-lg ring-1 ring-black/5 backdrop-blur-md">
@@ -212,6 +235,12 @@ export const MapDisplay = React.memo(({ polyline, origin, destination, travelMod
 
             <div className="absolute bottom-4 left-4 right-4 z-[1000]">
                 <div className="flex items-center gap-3 rounded-2xl bg-white/90 p-4 shadow-xl ring-1 ring-black/5 backdrop-blur-md">
+                    {/* Destination thumbnail */}
+                    {destination_image_url && (
+                        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl ring-1 ring-black/5">
+                            <img src={destination_image_url} alt={destination || 'Destination'} className="h-full w-full object-cover" />
+                        </div>
+                    )}
                     <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-3">
                             <div className="flex flex-col items-center">
@@ -227,12 +256,15 @@ export const MapDisplay = React.memo(({ polyline, origin, destination, travelMod
                                 <div className="h-px bg-zinc-100"></div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-tighter">Destination</span>
-                                    <span className="text-xs font-semibold text-zinc-900 truncate max-w-[200px]">{destination || "Calculating..."}</span>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-xs font-semibold text-zinc-900 truncate max-w-[200px]">{destination || "Calculating..."}</span>
+                                        {mode_label && <span className="text-[10px] text-zinc-400">{mode_label}</span>}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-lg transition-transform hover:scale-105 active:scale-95">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
                             <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z" clipRule="evenodd" />

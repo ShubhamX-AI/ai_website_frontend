@@ -29,6 +29,7 @@ const NearbyOffices = dynamic<any>(() => import('./NearbyOffices').then(mod => m
     loading: () => <div className="h-[350px] w-full animate-pulse rounded-[32px] bg-zinc-100/50 backdrop-blur-md md:h-[450px]" />
 });
 
+
 interface AgentInterfaceProps {
     onDisconnect: () => void;
 }
@@ -420,6 +421,8 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                             travelMode={mapPolylineMessage.mapPolylineData.travelMode}
                             distance={mapPolylineMessage.mapPolylineData.distance}
                             duration={mapPolylineMessage.mapPolylineData.duration}
+                            mode_label={mapPolylineMessage.mapPolylineData.mode_label}
+                            destination_image_url={mapPolylineMessage.mapPolylineData.destination_image_url}
                         />
                     </div>
                 ) : latestVisualMessage?.type === 'global_presence' && globalPresenceMessage?.globalPresenceData ? (

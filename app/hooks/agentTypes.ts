@@ -63,9 +63,11 @@ export interface MapPolylineData {
     polyline: string;
     origin?: string;
     destination?: string;
-    travelMode?: 'driving' | 'walking' | 'bicycling' | 'transit';
+    travelMode?: 'DRIVE' | 'WALK' | 'BICYCLE' | 'TRANSIT' | 'TWO_WHEELER';
     distance?: string;
     duration?: string;
+    mode_label?: string;
+    destination_image_url?: string;
 }
 
 export interface GlobalPresenceData {
@@ -77,8 +79,12 @@ export interface NearbyOffice {
     id: string;
     name: string;
     address: string;
-    image_url: string;
+    image_url?: string;
+    map_url?: string;
+    lat?: number;
+    lng?: number;
 }
+
 
 export interface NearbyOfficesData {
     offices: NearbyOffice[];

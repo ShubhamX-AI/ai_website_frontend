@@ -195,6 +195,8 @@ export function useAgentMessages() {
                                 travelMode: (data.data?.travelMode || data.travelMode) as any,
                                 distance: data.data?.distance || data.distance,
                                 duration: data.data?.duration || data.duration,
+                                mode_label: data.data?.mode_label || data.mode_label,
+                                destination_image_url: data.data?.destination_image_url || data.destination_image_url,
                             }
                         });
                         return next;
@@ -220,6 +222,8 @@ export function useAgentMessages() {
                                     travelMode: (data.data?.travelMode || data.travelMode) as any,
                                     distance: data.data?.distance || data.distance,
                                     duration: data.data?.duration || data.duration,
+                                    mode_label: data.data?.mode_label || data.mode_label,
+                                    destination_image_url: data.data?.destination_image_url || data.destination_image_url,
                                 }
                             });
                             return next;
