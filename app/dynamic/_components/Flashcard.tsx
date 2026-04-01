@@ -106,7 +106,6 @@ export const Flashcard = React.memo(({
     const prefersReducedMotion = useReducedMotion();
     const hasStreamedOnceRef = useRef(false);
     const [displayLength, setDisplayLength] = useState(0);
-    const [isStreaming, setIsStreaming] = useState(false);
 
     // Media
     const hasMedia = Boolean(media?.query || (media?.urls && media.urls.length > 0));
@@ -118,7 +117,6 @@ export const Flashcard = React.memo(({
     useEffect(() => {
         if (!safeValue) {
             setDisplayLength(0);
-            setIsStreaming(false);
             return;
         }
 
@@ -129,19 +127,22 @@ export const Flashcard = React.memo(({
 
         if (!shouldAnimate) {
             setDisplayLength(safeValue.length);
-            setIsStreaming(false);
             return;
         }
 
         setDisplayLength(0);
-        setIsStreaming(true);
         hasStreamedOnceRef.current = true;
 
         let cancelled = false;
         let timeoutId: ReturnType<typeof setTimeout> | undefined;
         const totalLength = safeValue.length;
 
-        // Balanced cadence: small chunks for short text, larger chunks for long text.
+        const delay =
+            totalLength > 1200 ? 16 :
+            totalLength > 700  ? 18 :
+            totalLength > 350  ? 22 :
+            totalLength > 140  ? 26 : 30;
+
         const getStep = (remaining: number) => {
             if (totalLength > 1200) return Math.max(5, Math.ceil(remaining / 28));
             if (totalLength > 700) return Math.max(4, Math.ceil(remaining / 24));
@@ -150,31 +151,17 @@ export const Flashcard = React.memo(({
             return 1;
         };
 
-        const getDelay = () => {
-            if (totalLength > 1200) return 16;
-            if (totalLength > 700) return 18;
-            if (totalLength > 350) return 22;
-            if (totalLength > 140) return 26;
-            return 30;
-        };
-
         const streamStep = (currentLength: number) => {
             if (cancelled) return;
             const remaining = totalLength - currentLength;
-            if (remaining <= 0) {
-                setIsStreaming(false);
-                return;
-            }
+            if (remaining <= 0) return;
 
             const nextLength = Math.min(totalLength, currentLength + getStep(remaining));
             setDisplayLength(nextLength);
 
-            if (nextLength >= totalLength) {
-                setIsStreaming(false);
-                return;
+            if (nextLength < totalLength) {
+                timeoutId = setTimeout(() => streamStep(nextLength), delay);
             }
-
-            timeoutId = setTimeout(() => streamStep(nextLength), getDelay());
         };
 
         timeoutId = setTimeout(() => streamStep(0), 120);
@@ -302,7 +289,7 @@ export const Flashcard = React.memo(({
                     {/* Body text */}
                     <div className={`mt-3 text-sm ${isNeon ? 'text-zinc-300' : 'text-zinc-600'}`}>
                         {renderContent(visibleText)}
-                        {isStreaming && (
+                        {displayLength > 0 && displayLength < safeValue.length && (
                             <span
                                 aria-hidden="true"
                                 className="ml-1 inline-block h-3 w-[2px] animate-pulse rounded-full bg-current align-middle opacity-50"
