@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { NearbyOfficesData } from '../../hooks/agentTypes';
-import { SmartIcon } from './SmartIcon';
+import { NearbyOfficesData } from '../../../hooks/agentTypes';
+import { SmartIcon } from '../shared/SmartIcon';
 
 interface NearbyOfficesProps {
     data: NearbyOfficesData;

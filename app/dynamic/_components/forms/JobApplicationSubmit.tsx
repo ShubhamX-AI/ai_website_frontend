@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { JobApplicationData } from '../../hooks/agentTypes';
+import { JobApplicationData } from '../../../hooks/agentTypes';
 
 interface JobApplicationSubmitProps {
     data: JobApplicationData;

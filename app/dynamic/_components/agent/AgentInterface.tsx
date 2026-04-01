@@ -1,30 +1,31 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAgentInteraction, ChatMessage } from '../../hooks/useAgentInteraction';
+import { useAgentInteraction } from '../../../hooks/useAgentInteraction';
 import { useLocalParticipant } from '@livekit/components-react';
-import { BarVisualizer } from './BarVisualizer';
-import { Flashcard } from './Flashcard';
-import { ContactForm } from './ContactForm';
-import { ContactFormSubmit } from './ContactFormSubmit';
-import { JobApplicationForm } from './JobApplicationForm';
-import { JobApplicationSubmit } from './JobApplicationSubmit';
-import { MeetingForm } from './MeetingForm';
-import { MeetingFormSubmit } from './MeetingFormSubmit';
-import { StarterScreen } from './StarterScreen';
+import { BarVisualizer } from '../shared/BarVisualizer';
+import { ContactForm } from '../forms/ContactForm';
+import { ContactFormSubmit } from '../forms/ContactFormSubmit';
+import { JobApplicationForm } from '../forms/JobApplicationForm';   
+import { JobApplicationSubmit } from '../forms/JobApplicationSubmit';
+import { MeetingForm } from '../forms/MeetingForm';
+import { MeetingFormSubmit } from '../forms/MeetingFormSubmit';
+import { StarterScreen } from '../shared/StarterScreen';
 import { RoomAudioRenderer } from '@livekit/components-react';
 import dynamic from 'next/dynamic';
+import { CardDisplay } from './CardDisplay';
+import { useVisualMessageFilters } from './useVisualMessageFilters';
 
-const MapDisplay = dynamic<any>(() => import('./MapDisplay').then(mod => mod.MapDisplay), {
+const MapDisplay = dynamic<any>(() => import('../maps/MapDisplay').then(mod => mod.MapDisplay), {
     ssr: false,
     loading: () => <div className="h-[350px] w-full animate-pulse rounded-[32px] bg-zinc-100/50 backdrop-blur-md md:h-[450px]" />
 });
 
-const GlobalPresenceMap = dynamic<any>(() => import('./GlobalPresenceMap').then(mod => mod.GlobalPresenceMap), {
+const GlobalPresenceMap = dynamic<any>(() => import('../maps/GlobalPresenceMap').then(mod => mod.GlobalPresenceMap), {
     ssr: false,
     loading: () => <div className="h-[350px] w-full animate-pulse rounded-[32px] bg-zinc-900/50 backdrop-blur-md md:h-[450px]" />
 });
 
-const NearbyOffices = dynamic<any>(() => import('./NearbyOffices').then(mod => mod.NearbyOffices), {
+const NearbyOffices = dynamic<any>(() => import('../maps/NearbyOffices').then(mod => mod.NearbyOffices), {
     ssr: false,
     loading: () => <div className="h-[350px] w-full animate-pulse rounded-[32px] bg-zinc-100/50 backdrop-blur-md md:h-[450px]" />
 });
@@ -33,144 +34,6 @@ const NearbyOffices = dynamic<any>(() => import('./NearbyOffices').then(mod => m
 interface AgentInterfaceProps {
     onDisconnect: () => void;
 }
-
-const SubtitleOverlay = ({ text, isInterim }: { text: string | null; isInterim: boolean }) => {
-    const [visibleText, setVisibleText] = useState<string | null>(null);
-    const timeoutRef = useRef<NodeJS.Timeout>(null);
-
-    const processedText = useMemo(() => {
-        if (!text) return null;
-        if (text.length > 120) {
-            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-            return sentences[sentences.length - 1].trim();
-        }
-        return text;
-    }, [text]);
-
-    useEffect(() => {
-        if (processedText) {
-            setVisibleText(processedText);
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-            if (!isInterim) {
-                timeoutRef.current = setTimeout(() => {
-                    setVisibleText(null);
-                }, 4000);
-            }
-        }
-    }, [processedText, isInterim]);
-
-    if (!visibleText) return null;
-
-    return (
-        <div className="pointer-events-none absolute bottom-28 left-0 right-0 z-20 flex justify-center px-4 md:bottom-32">
-            <div className={`max-w-2xl text-center transition-all duration-300 ${visibleText ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <span className={`inline-block rounded-xl bg-black/60 px-4 py-2 text-sm font-medium text-white backdrop-blur-md shadow-lg md:rounded-2xl md:px-6 md:py-3 md:text-lg
-                    ${isInterim ? 'animate-pulse' : ''}`}>
-                    {visibleText}
-                </span>
-            </div>
-        </div>
-    );
-};
-
-const CardDisplay = ({ cards }: { cards: ChatMessage[] }) => {
-    if (cards.length === 0) return null;
-
-    const validCards = cards.filter((card): card is ChatMessage & { cardData: NonNullable<ChatMessage['cardData']> } =>
-        card && card.cardData !== undefined && card.cardData.title !== undefined
-    );
-    if (validCards.length === 0) return null;
-
-    const latestFlashcardId = validCards[validCards.length - 1].id;
-    const count = validCards.length;
-
-    let gridClasses = "grid w-full auto-rows-max items-start gap-4 md:gap-6 mx-auto ";
-    if (count === 1) {
-        gridClasses += "grid-cols-1 max-w-[min(92vw,60rem)]";
-    } else if (count === 2) {
-        gridClasses += "grid-cols-1 md:grid-cols-2 max-w-5xl";
-    } else if (count === 3) {
-        gridClasses += "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 max-w-7xl";
-    } else if (count === 4) {
-        gridClasses += "grid-cols-1 md:grid-cols-2 max-w-5xl";
-    } else {
-        gridClasses += "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 max-w-[95vw] xl:max-w-screen-2xl";
-    }
-
-    return (
-        <div className="relative flex w-full flex-col items-center">
-            <motion.div
-                layout
-                className={`relative z-10 px-4 md:px-8 ${gridClasses}`}
-            >
-                <AnimatePresence mode="popLayout">
-                    {validCards.map((card) => {
-                        const hasMedia = Boolean(
-                            card.cardData?.media?.query ||
-                            (card.cardData?.media?.urls && card.cardData.media.urls.length > 0)
-                        );
-
-                        const itemClass = "flex w-full self-start items-start";
-
-                        // Determine internal Flashcard layout based on grid context — NOT from backend
-                        let layoutProp: 'default' | 'horizontal' = 'default';
-                        if (count === 1 && hasMedia) {
-                            layoutProp = 'horizontal';
-                        }
-
-                        // Smoother liquid animation flow without hardcoded delays
-                        return (
-                            <motion.div
-                                layout
-                                key={card.id}
-                                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                                animate={{
-                                    opacity: 1, y: 0, scale: 1,
-                                    transition: {
-                                        type: "spring",
-                                        stiffness: 160,
-                                        damping: 20,
-                                        mass: 0.8
-                                    }
-                                }}
-                                exit={{ opacity: 0, scale: 0.85, y: -20, transition: { duration: 0.3, ease: "easeOut" } }}
-                                // Fluidly reposition remaining items when grid changes
-                                transition={{ type: "spring", stiffness: 180, damping: 22 }}
-                                className={itemClass}
-                            >
-                                <Flashcard
-                                    {...card.cardData}
-                                    layout={layoutProp}
-                                    card_index={card.cardData?.card_index ?? 0}
-                                    layoutId={card.id}
-                                    shouldStreamText={card.id === latestFlashcardId}
-                                />
-                            </motion.div>
-                        );
-                    })}
-                </AnimatePresence>
-            </motion.div>
-
-            {validCards.length > 4 && (
-                <div className="mt-4 md:mt-6 flex items-center gap-2 rounded-full bg-white/40 px-3 py-1.5 md:px-4 md:py-2 backdrop-blur-xl ring-1 ring-black/5 shadow-lg">
-                    <div className="flex gap-1 md:gap-1.5">
-                        {validCards.slice(-5).map((_, idx) => (
-                            <motion.div
-                                key={idx}
-                                layoutId={`dot-${idx}`}
-                                className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-zinc-400"
-                            />
-                        ))}
-                    </div>
-                    <span className="text-[10px] md:text-xs font-medium text-zinc-600">
-                        {validCards.length} Cards
-                    </span>
-                </div>
-            )}
-        </div>
-    );
-};
 
 export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) => {
     const {
@@ -189,99 +52,21 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
     const [isMuted, setIsMuted] = useState(false);
     const [isAgentMuted, setIsAgentMuted] = useState(false);
 
-    const flashcards = useMemo(() => {
-        return messages.filter(m => m.type === 'flashcard');
-    }, [messages]);
+    const flashcards = useMemo(() => messages.filter(m => m.type === 'flashcard'), [messages]);
 
-    const latestAgentMessage = useMemo(() => {
-        const agentMsgs = messages.filter(m => m.sender === 'agent' && m.type === 'text');
-        return agentMsgs.length > 0 ? agentMsgs[agentMsgs.length - 1] : null;
-    }, [messages]);
-
-    const latestVisualMessage = useMemo(() => {
-        // location_request is intentionally excluded — it's handled silently via useEffect
-        const visualMsgs = messages.filter(m =>
-            m.type === 'flashcard' ||
-            m.type === 'contact_form' ||
-            m.type === 'contact_form_submit' ||
-            m.type === 'meeting_form' ||
-            m.type === 'meeting_form_submit' ||
-            m.type === 'map_polyline' ||
-            m.type === 'global_presence' ||
-            m.type === 'nearby_offices' ||
-            m.type === 'job_application_preview' ||
-            m.type === 'job_application_submit'
-        );
-        return visualMsgs.length > 0 ? visualMsgs[visualMsgs.length - 1] : null;
-    }, [messages]);
-
-    const locationRequestMessage = useMemo(() => {
-        const req = messages.filter(m => m.type === 'location_request');
-        return req.length > 0 ? req[req.length - 1] : null;
-    }, [messages]);
-
-    const contactFormMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'contact_form') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
-
-    const contactFormSubmitMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'contact_form_submit') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
-
-    const meetingFormMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'meeting_form') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
-
-    const meetingFormSubmitMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'meeting_form_submit') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
-
-    const mapPolylineMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'map_polyline') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
-
-    const globalPresenceMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'global_presence') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
-
-    const nearbyOfficesMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'nearby_offices') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
-
-    const jobApplicationPreviewMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'job_application_preview') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
-
-    const jobApplicationSubmitMessage = useMemo(() => {
-        if (latestVisualMessage?.type === 'job_application_submit') {
-            return latestVisualMessage;
-        }
-        return null;
-    }, [latestVisualMessage]);
+    const {
+        latestVisualMessage,
+        locationRequestMessage,
+        contactFormMessage,
+        contactFormSubmitMessage,
+        meetingFormMessage,
+        meetingFormSubmitMessage,
+        mapPolylineMessage,
+        globalPresenceMessage,
+        nearbyOfficesMessage,
+        jobApplicationPreviewMessage,
+        jobApplicationSubmitMessage,
+    } = useVisualMessageFilters(messages);
 
     const { localParticipant } = useLocalParticipant();
 
@@ -305,7 +90,6 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
         };
 
         if (!navigator.geolocation) {
-            // Browser doesn't support geolocation at all
             publishLocation({ status: 'unsupported' });
             return;
         }
@@ -320,23 +104,14 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
                 });
             },
             (err) => {
-                // User denied or timed out
                 console.warn('--- GEOLOCATION: Error ---', err.message);
-                publishLocation({
-                    status: 'denied',
-                    error: err.message,
-                });
+                publishLocation({ status: 'denied', error: err.message });
             },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,      // 10s before giving up
-                maximumAge: 60000,   // Accept cached position up to 1 min old
-            }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [locationRequestMessage?.id]); // Only re-fire when a NEW location request arrives
     // ────────────────────────────────────────────────────────────────────────
-
 
     const handleSend = () => {
         if (!inputText.trim()) return;
@@ -359,7 +134,6 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect }) 
     return (
         <div className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl bg-transparent ring-1 ring-black/5 shadow-2xl">
             <RoomAudioRenderer />
-
 
             {/* Thinking / Loading Overlay */}
             <AnimatePresence>

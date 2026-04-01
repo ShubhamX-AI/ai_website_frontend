@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { JobApplicationData, ChatMessage } from '../../hooks/agentTypes';
+import { JobApplicationData, ChatMessage } from '../../../hooks/agentTypes';
 import { useLocalParticipant } from '@livekit/components-react';
 
 interface JobApplicationFormProps {

@@ -2,7 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DynamicImage } from './DynamicImage';
+import { DynamicImage } from '../shared/DynamicImage';
+import {
+    MediaType,
+    detectMediaType,
+    isVideoType,
+    getAspectClass,
+    getMinHeightClass,
+    getYoutubeId,
+    getVimeoId,
+} from './mediaDetection';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 // No mediaType or aspectRatio — both are derived automatically from the URL.
@@ -13,38 +22,6 @@ interface RichMediaProps {
     source?: string;
     alt?: string;
 }
-
-type MediaType = 'image' | 'video' | 'youtube' | 'vimeo' | 'unknown';
-
-// ─── Type Detection ───────────────────────────────────────────────────────────
-// YouTube/Vimeo always wins first. Then video file extensions. Else image.
-
-const detectMediaType = (url: string): MediaType => {
-    if (!url) return 'unknown';
-    const u = url.toLowerCase();
-    if (u.includes('youtube.com') || u.includes('youtu.be') || u.includes('youtube-nocookie.com')) return 'youtube';
-    if (u.includes('vimeo.com')) return 'vimeo';
-    if (u.match(/\.(mp4|webm|ogg|mov|m4v)$/) || u.includes('cloudinary.com/video/upload')) return 'video';
-    return 'image';
-};
-
-const isVideoType = (t: MediaType) => t === 'video' || t === 'youtube' || t === 'vimeo';
-
-// Derive aspect ratio: perfect 16:9 for everything to guarantee grid symmetry
-const getAspectClass    = (t: MediaType) => 'aspect-video';
-const getMinHeightClass = (t: MediaType) => '';
-
-// ─── YouTube / Vimeo ID extraction ────────────────────────────────────────────
-
-const getYoutubeId = (url: string) => {
-    const m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/);
-    return m && m[2].length === 11 ? m[2] : null;
-};
-
-const getVimeoId = (url: string) => {
-    const m = url.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:$|\/|\?)/);
-    return m ? m[1] : null;
-};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

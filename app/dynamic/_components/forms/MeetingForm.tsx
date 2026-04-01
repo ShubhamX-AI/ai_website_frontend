@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MeetingFormData } from '../../hooks/agentTypes';
+import { MeetingFormData } from '../../../hooks/agentTypes';
 
 interface MeetingFormProps {
     data: MeetingFormData;

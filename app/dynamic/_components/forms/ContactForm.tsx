@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ContactFormData } from '../../hooks/agentTypes';
+import { ContactFormData } from '../../../hooks/agentTypes';
 
 interface ContactFormProps {
     data: ContactFormData;
