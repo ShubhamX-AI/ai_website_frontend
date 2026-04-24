@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface UserInfo {
     user_name: string;
@@ -13,6 +14,12 @@ interface UserInfo {
 
 export default function LandingPage() {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    const router = useRouter();
+
+    async function handleLogout() {
+        await fetch("/api/auth/logout", { method: "POST" });
+        router.push("/login?logout=true");
+    }
 
     useEffect(() => {
         console.log("Checking local storage for user_info...");
@@ -137,8 +144,13 @@ export default function LandingPage() {
                 transition={{ delay: 0.8, duration: 1 }}
                 className="absolute bottom-8 mx-auto flex w-full max-w-7xl justify-between px-8 text-xs font-medium text-slate-400"
             >
-                {/* <div>INDUSNET © 2026</div> */}
-                {/* <div className="hidden sm:block">AI RESEARCH DIVISION</div> */}
+                <div />
+                <button
+                    onClick={handleLogout}
+                    className="text-slate-400 transition hover:text-slate-600"
+                >
+                    Sign out
+                </button>
             </motion.footer>
         </div>
     );
