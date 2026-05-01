@@ -300,13 +300,43 @@ docker-compose build
 docker-compose up -d
 ```
 
+## 🔐 Authentication
+
+Auth is split between Next.js (UI + cookie) and FastAPI (credential verification + JWT issuance).
+
+### How it works
+
+- **Username/Password:** Login form → Next.js `/api/auth` → FastAPI `POST /auth/login` → signed JWT → httpOnly cookie
+- **Google SSO:** Google button → Next.js `/api/auth/google` → FastAPI OAuth flow → signed JWT → httpOnly cookie → `/landing`
+- **Session gate:** `proxy.ts` checks `auth_session` cookie on every request. Clients expire after `CLIENT_SESSION_HOURS` (default 4h). Admins get 30-day sessions.
+
+### Auth flow diagram
+
+```
+Username/Password:
+  Browser → POST /api/auth → FastAPI /auth/login → JWT → cookie set by Next.js
+
+Google SSO:
+  Browser → /api/auth/google → FastAPI /auth/google → Google consent
+  → FastAPI /auth/google/callback → JWT → Next.js /api/auth/google/callback → cookie → /landing
+```
+
+### Backend setup
+
+See `BACKEND_AUTH_SPEC.md` for the complete FastAPI implementation guide (endpoints, JWT config, DB model, Google OAuth setup).
+
+---
+
 ## 📝 Environment Variables Reference
 
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `NEXT_PUBLIC_LIVEKIT_URL` | LiveKit WebSocket URL | `wss://livekit-vyom.indusnettechnologies.com` |
-| `NEXT_PUBLIC_BACKEND_URL` | Backend API URL | `https://api-livekit-vyom.indusnettechnologies.com` |
+| `NEXT_PUBLIC_BACKEND_URL` | Backend API URL (public, used client-side) | `https://api.indusnettechnologies.com` |
 | `NEXT_PUBLIC_PIXABAY_API_KEY` | Pixabay API key for images | `your_api_key_here` |
+| `BACKEND_URL` | Backend API URL (server-side only, for auth proxy) | `https://api.indusnettechnologies.com` |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | from Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | from Google Cloud Console |
 | `NODE_ENV` | Node environment | `production` |
 
 ## 🎯 Best Practices

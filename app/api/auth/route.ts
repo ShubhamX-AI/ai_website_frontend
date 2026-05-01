@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
 
-interface ClientAccount {
-  email: string;
-  password: string;
-}
-
 export async function POST(request: Request) {
   const { email, password } = await request.json();
 
@@ -12,49 +7,57 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
   }
 
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const adminPassword = process.env.ADMIN_PASSWORD;
-  const sessionHours = parseInt(process.env.CLIENT_SESSION_HOURS ?? "4", 10);
+  const backendUrl = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  let role: "admin" | "client" | null = null;
-  let expiresAt: number | null = null;
+  try {
+    const res = await fetch(`${backendUrl}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-  if (email === adminEmail && password === adminPassword) {
-    role = "admin";
-    expiresAt = null;
-  } else {
-    let clients: ClientAccount[] = [];
-    try {
-      clients = JSON.parse(process.env.CLIENT_ACCOUNTS ?? "[]");
-    } catch {
-      return NextResponse.json({ error: "Server config error" }, { status: 500 });
+    if (res.status === 403) {
+      return NextResponse.json(
+        { error: "Your access has expired. Contact admin." },
+        { status: 403 }
+      );
     }
 
-    const match = clients.find(
-      (c) => c.email === email && c.password === password
-    );
-    if (match) {
-      role = "client";
-      expiresAt = Date.now() + sessionHours * 60 * 60 * 1000;
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return NextResponse.json(
+        { error: data.detail ?? "Invalid credentials" },
+        { status: res.status }
+      );
     }
+
+    const data = await res.json() as {
+      token: string;
+      role: "admin" | "client";
+      expires_at: number | null;
+    };
+
+    const sessionValue = JSON.stringify({
+      role: data.role,
+      expiresAt: data.expires_at ?? null,
+      token: data.token,
+    });
+
+    const maxAge =
+      data.role === "admin"
+        ? 60 * 60 * 24 * 30
+        : Math.floor(((data.expires_at ?? Date.now() + 4 * 3600 * 1000) - Date.now()) / 1000);
+
+    const response = NextResponse.json({ success: true, role: data.role });
+    response.cookies.set("auth_session", sessionValue, {
+      httpOnly: true,
+      sameSite: "strict",
+      path: "/",
+      maxAge,
+    });
+
+    return response;
+  } catch {
+    return NextResponse.json({ error: "Auth service unavailable" }, { status: 503 });
   }
-
-  if (!role) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-  }
-
-  const sessionValue = JSON.stringify({ role, expiresAt });
-  // maxAge = cookie browser TTL; expiresAt in payload = what middleware checks at runtime.
-  // Admin has no expiresAt (unlimited), so maxAge is the only expiry mechanism for them.
-  const maxAge = role === "admin" ? 60 * 60 * 24 * 30 : sessionHours * 60 * 60;
-
-  const response = NextResponse.json({ success: true, role });
-  response.cookies.set("auth_session", sessionValue, {
-    httpOnly: true,
-    sameSite: "strict",
-    path: "/",
-    maxAge,
-  });
-
-  return response;
 }
