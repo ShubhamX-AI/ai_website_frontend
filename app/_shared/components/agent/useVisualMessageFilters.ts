@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import type { ChatMessage } from '@/app/_shared/types/agentTypes';
 
+/** Shape returned by useVisualMessageFilters — handy for prop typing (e.g. <Canvas visuals>). */
+export type VisualMessageFilters = ReturnType<typeof useVisualMessageFilters>;
+
 export function useVisualMessageFilters(messages: ChatMessage[]) {
     const latestVisualMessage = useMemo(() => {
         // location_request is intentionally excluded — it's handled silently via useEffect

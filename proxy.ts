@@ -8,6 +8,12 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Public embed surface — third-party sites load these without an auth cookie.
+  // `/widget.js` is the loader script; `/embed` is the widget it iframes in.
+  if (pathname === "/widget.js" || pathname === "/embed" || pathname.startsWith("/embed/")) {
+    return NextResponse.next();
+  }
+
   const cookie = request.cookies.get("auth_session");
 
   if (!cookie) {

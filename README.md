@@ -37,18 +37,27 @@ app/
 │   ├── page.tsx        #    static page; mounts <VaniChatWindow />
 │   └── _components/    #    vani-only UI (VaniChatWindow: launcher + panel)
 │
-├── _shared/            # ③ SHARED — used by BOTH experiences
+├── embed/              # ③ EMBEDDABLE widget — Vani for ANY third-party website
+│   ├── page.tsx        #    launcher orb ↔ slide drawer; runs inside the loader's iframe
+│   └── layout.tsx      #    forces a transparent background for the iframe
+│
+├── _shared/            # ④ SHARED — used by ALL of the above
 │   ├── hooks/          #    the AI engine: LiveKit connection, agent messages, send
 │   ├── types/          #    shared TypeScript types (agentTypes.ts)
 │   ├── ui/             #    shared presentational components (CTAButton, PageBackground)
-│   └── components/     #    the shared agent rendering layer (used by both experiences):
-│                       #      agent/      AgentInterface (variant: 'immersive' | 'window')
-│                       #      forms/ maps/ flashcard/ media/
-│                       #      primitives/ SmartIcon, StarterScreen, BarVisualizer, …
+│   └── components/     #    the shared agent rendering layer:
+│                       #      agent/AgentInterface  engine shell (variant: 'immersive' | 'window')
+│                       #      agent/Canvas          the visual board (cards, maps, forms)
+│                       #      agent/VoiceDock       the control bar (visualizer, mic, text)
+│                       #      forms/ maps/ flashcard/ media/ primitives/
 │
 ├── landing/page.tsx    # post-login page with the two CTA buttons
 ├── login/page.tsx
 └── api/                # auth + health route handlers
+
+public/
+├── widget.js           # the embed LOADER — the one file customers reference
+└── embed-demo.html     # a pretend third-party page for testing the embed locally
 ```
 
 **Rules of thumb**
@@ -60,6 +69,76 @@ app/
 - Import shared code from other folders with the `@/app/_shared/...` alias
   (configured in `tsconfig.json`). *Within* `_shared/` itself, sibling files use
   relative imports (e.g. `../types/agentTypes`).
+
+## 🔌 Embedding Vani on another website
+
+Vani can be dropped onto **any** website — your own marketing pages or a
+customer's site — with a single line, without touching their HTML, CSS, or JS.
+
+### For the site owner (the only thing they add)
+
+```html
+<script src="https://YOUR-VANI-HOST/widget.js" async></script>
+```
+
+That's it. A launcher orb appears bottom-right. Clicking it slides in a chat
+drawer with full voice + visual Vani. Optional override:
+
+```html
+<!-- serve /embed from a different host than the script itself -->
+<script src="https://cdn.example.com/widget.js" data-vani-src="https://vani.example.com" async></script>
+```
+
+### How it stays isolated (and why it can't break their site)
+
+```
+ customer's page                     your Vani host
+ ┌───────────────────────┐          ┌──────────────────────────────┐
+ │  <script widget.js> ──────────▶  │  /widget.js  (tiny loader)    │
+ │                       │          └──────────────────────────────┘
+ │  ┌─────────────────┐  │  injects ONE cross-origin <iframe>
+ │  │  <iframe> ───────────────────▶  /embed  (the whole widget UI)  │
+ │  │  launcher/drawer │  │          render: <AgentInterface>        │
+ │  └─────────────────┘  │            ├── Canvas     (visual board)  │
+ └───────────────────────┘            └── VoiceDock  (control bar)   │
+```
+
+- **Everything Vani draws lives in a cross-origin `<iframe>`.** The host page's
+  styles and scripts cannot reach in; Vani's cannot leak out. Zero collision.
+- **`widget.js` adds exactly one DOM node** (the iframe) and no global CSS.
+- The iframe **resizes itself** by posting `{ type: 'vani:resize', mode, width }`
+  to the loader: a small bottom-right box when collapsed, a right-docked drawer
+  (420px, or 720px expanded) on desktop, full-screen on mobile. On desktop the
+  rest of the host page stays clickable — the drawer overlays, it does **not**
+  push the host's layout.
+- **Mic** works because the iframe is granted `allow="microphone"`. The host page
+  must be served over **HTTPS** for the browser to honor it.
+
+### One engine, two views
+
+The widget is not a separate AI — it renders the same shared engine as `/dynamic`
+and `/vani`. `<AgentInterface>` owns the LiveKit room and composes two views that
+**always travel together**:
+
+- **`Canvas`** — the visual board: flashcards, maps, forms, the idle starter screen.
+- **`VoiceDock`** — the control bar: voice visualizer, mic toggle, text input.
+
+Both read the same message stream; neither works alone. The split is for clarity
+and reuse, not for shipping one without the other.
+
+### Test it locally
+
+```bash
+pnpm dev
+# open the pretend third-party page:
+#   http://localhost:3000/embed-demo.html
+# or the widget surface on its own:
+#   http://localhost:3000/embed
+```
+
+`/widget.js` and `/embed` are public (whitelisted in `proxy.ts`) so they load
+without an `auth_session` cookie. To restrict which domains may embed Vani, add a
+`Content-Security-Policy: frame-ancestors ...` header in front of `/embed`.
 
 ## 🚀 Quick Start
 

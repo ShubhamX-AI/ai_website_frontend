@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vani embed demo — a pretend third-party site</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 0; color: #0f172a; }
+        .hero { min-height: 100vh; display: grid; place-items: center; padding: 2rem;
+                background: linear-gradient(135deg, #eff6ff, #e0e7ff); text-align: center; }
+        h1 { font-size: clamp(28px, 5vw, 52px); margin: 0 0 .5rem; }
+        p { color: #475569; max-width: 540px; }
+    </style>
+</head>
+<body>
+    <main class="hero">
+        <div>
+            <h1>Someone else's website</h1>
+            <p>
+                This page has its own HTML, CSS and JS. The Vani launcher in the
+                bottom-right corner is loaded by a single &lt;script&gt; tag and runs
+                fully inside an iframe — it doesn't touch anything here.
+            </p>
+        </div>
+    </main>
+
+    <!-- The only line a customer adds. Served from the same origin in dev. -->
+    <script src="/widget.js" async></script>
+</body>
+</html>
