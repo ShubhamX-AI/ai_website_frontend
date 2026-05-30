@@ -35,22 +35,39 @@ export const VaniChatWindow: React.FC = () => {
 
     return (
         <>
-            {/* Launcher button — bottom-right */}
+            {/* Launcher — premium voice-bot button, bottom-right */}
             <AnimatePresence>
                 {!isOpen && (
-                    <motion.button
+                    <motion.div
                         key="launcher"
-                        initial={{ opacity: 0, scale: 0.8 }}
+                        initial={{ opacity: 0, scale: 0.85 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        onClick={() => setIsOpen(true)}
-                        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_12px_40px_-8px_rgba(37,99,235,0.5)] ring-1 ring-blue-500/20 transition-all hover:scale-110 hover:bg-blue-500 active:scale-95"
-                        aria-label="Open Vani chat"
+                        exit={{ opacity: 0, scale: 0.85 }}
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        className="group fixed bottom-8 right-8 z-50 flex items-center gap-3"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-                            <path fillRule="evenodd" d="M4.804 21.644A6.707 6.707 0 0 0 6 21.75a6.721 6.721 0 0 0 3.583-1.029c.774.182 1.584.279 2.417.279 5.322 0 9.75-3.97 9.75-9 0-5.03-4.428-9-9.75-9s-9.75 3.97-9.75 9c0 2.409 1.025 4.587 2.674 6.192.232.226.277.428.254.543a3.73 3.73 0 0 1-.814 1.686.75.75 0 0 0 .44 1.223Z" clipRule="evenodd" />
-                        </svg>
-                    </motion.button>
+                        {/* Slide-in label */}
+                        <span className="pointer-events-none translate-x-2 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-800 opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.12)] ring-1 ring-black/5 backdrop-blur transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                            Talk to Vani
+                        </span>
+
+                        <button
+                            onClick={() => setIsOpen(true)}
+                            className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white shadow-[0_8px_30px_rgba(37,99,235,0.45)] ring-1 ring-white/20 transition-all duration-300 hover:scale-105 hover:shadow-[0_14px_44px_rgba(37,99,235,0.6)] active:scale-95"
+                            aria-label="Talk to Vani"
+                        >
+                            {/* Soft breathing halo */}
+                            <span className="pointer-events-none absolute inset-0 animate-ping rounded-full bg-blue-500/30 [animation-duration:3s]" />
+                            {/* Top sheen for depth */}
+                            <span className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-t from-transparent to-white/15" />
+
+                            {/* Mic icon */}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="relative h-7 w-7 drop-shadow-sm">
+                                <path d="M8.25 4.5a3.75 3.75 0 1 1 7.5 0v8.25a3.75 3.75 0 1 1-7.5 0V4.5Z" />
+                                <path d="M6 10.5a.75.75 0 0 1 .75.75v1.5a5.25 5.25 0 1 0 10.5 0v-1.5a.75.75 0 0 1 1.5 0v1.5a6.751 6.751 0 0 1-6 6.709v2.291h3a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1 0-1.5h3v-2.291a6.751 6.751 0 0 1-6-6.709v-1.5A.75.75 0 0 1 6 10.5Z" />
+                            </svg>
+                        </button>
+                    </motion.div>
                 )}
             </AnimatePresence>
 

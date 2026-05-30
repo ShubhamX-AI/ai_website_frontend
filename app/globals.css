@@ -13,6 +13,7 @@
   --font-mono: var(--font-geist-mono);
 
   --animate-pulse-slow: pulse-slow 12s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-marquee: marquee 30s linear infinite;
 
   @keyframes pulse-slow {
     0%,
@@ -24,6 +25,15 @@
     50% {
       opacity: 0.3;
       transform: scale(1.05);
+    }
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
     }
   }
 }
