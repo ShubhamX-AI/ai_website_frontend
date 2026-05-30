@@ -8,7 +8,7 @@ import {
 import { Track } from 'livekit-client';
 
 // Import Types
-import { AgentState, InteractionMode, FlashcardStyle, ChatMessage } from './agentTypes';
+import { AgentState, InteractionMode, FlashcardStyle, ChatMessage } from '../types/agentTypes';
 export type { AgentState, InteractionMode, FlashcardStyle, ChatMessage };
 
 // Import Sub-Hooks

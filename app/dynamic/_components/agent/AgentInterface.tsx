@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAgentInteraction } from '../../../hooks/useAgentInteraction';
+import { useAgentInteraction } from '@/app/_shared/hooks/useAgentInteraction';
 import { useLocalParticipant } from '@livekit/components-react';
 import { BarVisualizer } from '../shared/BarVisualizer';
 import { ContactForm } from '../forms/ContactForm';

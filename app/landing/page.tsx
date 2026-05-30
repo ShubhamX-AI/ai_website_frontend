@@ -5,6 +5,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CTAButton } from "@/app/_shared/ui/CTAButton";
+import { PageBackground } from "@/app/_shared/ui/PageBackground";
 
 interface UserInfo {
     user_name: string;
@@ -40,10 +42,7 @@ export default function LandingPage() {
         <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-slate-50 text-slate-900 selection:bg-blue-100 selection:text-blue-900">
 
             {/* Background Texture/Gradient - Cool & Professional */}
-            <div className="pointer-events-none absolute inset-0 z-0 opacity-40">
-                <div className="absolute top-0 left-1/2 h-[1000px] w-[1000px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(219,234,254,0.5)_0%,rgba(255,255,255,0)_70%)] blur-[100px]"></div>
-                <div className="absolute bottom-0 right-0 h-[800px] w-[800px] translate-x-1/4 translate-y-1/4 rounded-full bg-[radial-gradient(circle,rgba(224,242,254,0.3)_0%,rgba(255,255,255,0)_70%)] blur-[80px]"></div>
-            </div>
+            <PageBackground />
 
             <main className="relative z-10 flex w-full max-w-5xl flex-col items-center gap-12 px-6 text-center">
 
@@ -86,40 +85,51 @@ export default function LandingPage() {
                     </motion.p>
                 </div>
 
-                {/* CTA Button - Primary Action */}
+                {/* CTA Buttons */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     className="pt-4"
                 >
-                    <Link
-                        href="/dynamic"
-                        className="group relative inline-flex"
-                    >
-                        <div className="relative flex h-14 items-center justify-center gap-3 overflow-hidden rounded-full bg-blue-600 px-10 text-base font-medium text-white shadow-lg shadow-blue-600/20 transition-transform duration-300 active:scale-95 group-hover:bg-blue-700">
+                    <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
 
-                            <span>Talk to our website</span>
+                        {/* Primary: opens the immersive AI experience (/dynamic) */}
+                        <CTAButton
+                            href="/dynamic"
+                            label="Talk to our website"
+                            variant="primary"
+                            icon={
+                                <motion.svg
+                                    className="h-4 w-4 text-blue-200"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    animate={{ x: [0, 3, 0] }}
+                                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 1 }}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </motion.svg>
+                            }
+                        />
 
-                            {/* Animated Arrow */}
-                            <motion.svg
-                                className="h-4 w-4 text-blue-200"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                animate={{ x: [0, 3, 0] }}
-                                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 1 }}
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </motion.svg>
-
-                            {/* Shine Effect */}
-                            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 ease-in-out group-hover:translate-x-full"></div>
-                        </div>
-
-                        {/* Subtle Button Shadow/Glow */}
-                        <div className="absolute top-2 left-4 right-4 -z-10 h-full rounded-full bg-blue-600/30 blur-xl transition-opacity duration-500 group-hover:opacity-50"></div>
-                    </Link>
+                        {/* Secondary: opens the new Vani chat-window experience (/vani) */}
+                        <CTAButton
+                            href="/vani"
+                            label="Try VANI Today"
+                            variant="secondary"
+                            icon={
+                                <svg
+                                    className="h-4 w-4 text-blue-400"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                                </svg>
+                            }
+                        />
+                    </div>
 
                     <motion.div
                         initial={{ opacity: 0 }}

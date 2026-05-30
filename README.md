@@ -17,8 +17,44 @@ ai_website_frontend/
 ├── docker-compose.yml         # Docker Compose orchestration
 ├── .dockerignore             # Files to exclude from Docker build
 ├── .env.production           # Production environment variables template
-└── next.config.ts            # Next.js config with standalone output
+├── next.config.ts            # Next.js config with standalone output
+└── types/
+    └── globals.d.ts          # TypeScript declarations for non-JS imports (CSS, images)
 ```
+
+## 🧭 Application Structure (`app/`)
+
+The frontend has **two AI experiences** that share one engine. The folder layout
+mirrors that: one folder per experience, plus a shared folder for everything common.
+
+```
+app/
+├── dynamic/            # ① IMMERSIVE experience (full-window AI) — "Talk to our website"
+│   ├── page.tsx
+│   └── _components/    #    immersive-only UI (agent, forms, maps, flashcard)
+│
+├── vani/               # ② CHAT-WINDOW experience — "Try Vani Today"
+│   ├── page.tsx
+│   └── _components/    #    vani-only UI (added in a later step)
+│
+├── _shared/            # ③ SHARED — used by BOTH experiences
+│   ├── hooks/          #    the AI engine: LiveKit connection, agent messages, send
+│   ├── types/          #    shared TypeScript types (agentTypes.ts)
+│   └── ui/             #    shared presentational components (CTAButton, PageBackground)
+│
+├── landing/page.tsx    # post-login page with the two CTA buttons
+├── login/page.tsx
+└── api/                # auth + health route handlers
+```
+
+**Rules of thumb**
+- UI used by only one experience → that experience's `_components/`.
+- Anything used by both (logic, types, generic UI) → `_shared/`.
+- `_shared/hooks` is the single source of AI logic — both experiences render
+  different *views* over the same hooks, so there is no duplicated logic.
+- Import shared code from other folders with the `@/app/_shared/...` alias
+  (configured in `tsconfig.json`). *Within* `_shared/` itself, sibling files use
+  relative imports (e.g. `../types/agentTypes`).
 
 ## 🚀 Quick Start
 
@@ -243,6 +279,21 @@ docker-compose top
 ```
 
 ## 🛠️ Troubleshooting
+
+### TypeScript: "Cannot find module" for CSS imports
+
+If you see `Cannot find module or type declarations for side-effect import of './globals.css'`, it means TypeScript doesn't recognize `.css` imports. The fix is already in `types/globals.d.ts`:
+
+```typescript
+declare module "*.css";
+```
+
+This tells TypeScript that CSS imports are valid (handled by Next.js/webpack at build time). If you add new non-JS file types (images, SVGs, etc.), add similar declarations:
+
+```typescript
+declare module "*.svg";
+declare module "*.png";
+```
 
 ### Container won't start
 ```bash

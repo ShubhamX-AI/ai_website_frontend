@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ChatMessage } from '../../../hooks/useAgentInteraction';
+import type { ChatMessage } from '@/app/_shared/types/agentTypes';
 
 export function useVisualMessageFilters(messages: ChatMessage[]) {
     const latestVisualMessage = useMemo(() => {

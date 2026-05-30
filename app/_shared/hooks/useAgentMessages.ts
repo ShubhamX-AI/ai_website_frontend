@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useRoomContext, useLocalParticipant } from '@livekit/components-react';
 import { RoomEvent, type TranscriptionSegment, type Participant } from 'livekit-client';
-import { ChatMessage } from './agentTypes';
+import { ChatMessage } from '../types/agentTypes';
 
 export function useAgentMessages() {
     const room = useRoomContext();

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useLocalParticipant } from '@livekit/components-react';
-import { InteractionMode, ChatMessage } from './agentTypes';
+import { InteractionMode, ChatMessage } from '../types/agentTypes';
 
 export function useInteractionControl(
     updateMessages: (updater: (prev: Map<string, ChatMessage>) => Map<string, ChatMessage>) => void

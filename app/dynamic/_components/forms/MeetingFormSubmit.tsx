@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MeetingInviteSubmitData } from '../../../hooks/agentTypes';
+import { MeetingInviteSubmitData } from '@/app/_shared/types/agentTypes';
 
 interface MeetingFormSubmitProps {
     data: MeetingInviteSubmitData;

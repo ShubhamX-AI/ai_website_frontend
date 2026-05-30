@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { LiveKitRoom } from "@livekit/components-react";
-import { useLiveKitConnection } from "../hooks/useLiveKitConnection";
+import { useLiveKitConnection } from "@/app/_shared/hooks/useLiveKitConnection";
 import { AgentInterface } from "./_components/agent/AgentInterface";
 import { ThreeBackground } from "./_components/shared/ThreeBackground";
 

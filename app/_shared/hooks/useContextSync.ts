@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { useRoomContext, useLocalParticipant, useVoiceAssistant } from '@livekit/components-react';
-import { ChatMessage } from './agentTypes';
+import { ChatMessage } from '../types/agentTypes';
 
 export function useContextSync(
     messagesRef: React.MutableRefObject<Map<string, ChatMessage>>,

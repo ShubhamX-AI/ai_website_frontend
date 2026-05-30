@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { FlashcardStyle, FlashcardMedia } from '../../../hooks/agentTypes';
+import { FlashcardStyle, FlashcardMedia } from '@/app/_shared/types/agentTypes';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { SmartIcon } from '../shared/SmartIcon';

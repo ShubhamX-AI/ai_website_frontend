@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChatMessage } from '../../../hooks/useAgentInteraction';
+import type { ChatMessage } from '@/app/_shared/types/agentTypes';
 import { Flashcard } from '../flashcard/Flashcard';
 
 interface CardDisplayProps {
