@@ -78,8 +78,8 @@ export const Canvas: React.FC<CanvasProps> = ({
     } = visuals;
 
     const className = [
-        'absolute inset-0 flex flex-col items-center justify-start overflow-y-auto overflow-x-hidden z-0 scrollbar-hide transition-all duration-500',
-        isWindow ? 'p-4 pt-14 pb-28' : 'p-4 pt-20 pb-40 md:justify-center md:p-12 md:pb-32',
+        'absolute inset-0 flex flex-col items-center overflow-y-auto overflow-x-hidden z-0 scrollbar-hide transition-all duration-500',
+        isWindow ? 'p-4 pt-14 pb-28' : 'p-4 pt-20 pb-40 md:p-12 md:pb-32',
         agentState === 'thinking' ? 'blur-sm scale-95 opacity-50' : 'blur-0 scale-100 opacity-100',
     ].join(' ');
 
@@ -161,10 +161,17 @@ export const Canvas: React.FC<CanvasProps> = ({
         }
     };
 
+    const visual = renderVisual();
+    const content = visual ?? (flashcards.length > 0 ? (
+        <CardDisplay cards={flashcards} variant={variant} />
+    ) : null);
+
     return (
         <div className={className}>
-            {renderVisual() || (flashcards.length > 0 ? (
-                <CardDisplay cards={flashcards} variant={variant} />
+            {content ? (
+                <div className="m-auto flex w-full flex-col items-center">
+                    {content}
+                </div>
             ) : (
                 <StarterScreen
                     variant={variant}
@@ -172,7 +179,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                     agentText={agentText}
                     isAgentInterim={isAgentInterim}
                 />
-            ))}
+            )}
         </div>
     );
 };

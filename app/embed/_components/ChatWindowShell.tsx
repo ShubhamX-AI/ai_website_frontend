@@ -227,7 +227,7 @@ export const ChatWindowShell: React.FC<ChatWindowShellProps> = ({
                                     onDisconnected={onClose}
                                     onError={(err) => console.error("LiveKit Room Error:", err)}
                                 >
-                                    <AgentInterface variant="window" onDisconnect={onClose} />
+                                    <AgentInterface variant="window" onDisconnect={onClose} isExpanded={isExpanded} />
                                 </LiveKitRoom>
                             )}
                         </div>

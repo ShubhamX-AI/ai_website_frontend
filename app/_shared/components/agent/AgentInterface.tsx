@@ -13,6 +13,11 @@ interface AgentInterfaceProps {
      * 'window'    — compact, tightened spacing for the Vani chat window / embed drawer.
      */
     variant?: 'immersive' | 'window';
+    /**
+     * Window variant only: the embed card is in its wide (expanded) state. Lets the
+     * VoiceDock widen with the card instead of staying pinned to its narrow cap.
+     */
+    isExpanded?: boolean;
 }
 
 /**
@@ -25,7 +30,7 @@ interface AgentInterfaceProps {
  * Both read from the same message stream; neither works alone. Used by /dynamic
  * (immersive), the Vani window, and the /embed widget.
  */
-export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect, variant = 'immersive' }) => {
+export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect, variant = 'immersive', isExpanded = false }) => {
     const {
         agentState,
         mode,
@@ -146,6 +151,7 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect, va
                 activeTrack={activeTrack}
                 userTrack={userTrack}
                 variant={variant}
+                isExpanded={isExpanded}
             />
         </div>
     );
