@@ -73,7 +73,7 @@ export const VoiceDock: React.FC<VoiceDockProps> = ({
     return (
         <div className={`relative z-30 flex flex-col justify-end flex-1 pointer-events-none ${isWindow ? 'mb-5' : 'mb-8'}`}>
             <div className={`pointer-events-auto flex w-full justify-center ${isWindow ? 'p-2' : 'p-4'}`}>
-                <div className={`flex w-full items-center gap-1.5 rounded-[32px] bg-white/80 p-1.5 shadow-[0_20px_40px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.04] backdrop-blur-2xl transition-all hover:scale-[1.01] hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] ${isWindow ? `mx-auto gap-2 sm:gap-2 p-1.5 sm:p-1.5 sm:pl-2.5 transition-[max-width] duration-300 ${isExpanded ? 'max-w-[620px]' : 'max-w-[440px]'}` : 'sm:w-auto sm:max-w-none sm:gap-3 sm:p-2 sm:pl-3'}`}>
+                <div className={`flex w-full items-center gap-1.5 rounded-[32px] ${isWindow ? 'bg-sky-100/70' : 'bg-white/80'} p-1.5 shadow-[0_20px_40px_rgba(0,0,0,0.08)] ring-1 ring-black/[0.04] backdrop-blur-2xl transition-all hover:scale-[1.01] hover:shadow-[0_25px_50px_rgba(0,0,0,0.12)] ${isWindow ? `mx-auto gap-2 sm:gap-2 p-1.5 sm:p-1.5 sm:pl-2.5 transition-[max-width] duration-300 ${isExpanded ? 'max-w-[620px]' : 'max-w-[440px]'}` : 'sm:w-auto sm:max-w-none sm:gap-3 sm:p-2 sm:pl-3'}`}>
 
                     <div className={`relative shrink-0 overflow-hidden rounded-xl bg-zinc-100/50 ring-1 ring-zinc-200 flex items-center justify-center ${isWindow ? 'h-9 w-12 sm:h-10 sm:w-14' : 'h-10 w-16 sm:h-12 sm:w-20'}`}>
                         <BarVisualizer agentTrack={activeTrack} userTrack={userTrack} mode="mini" />

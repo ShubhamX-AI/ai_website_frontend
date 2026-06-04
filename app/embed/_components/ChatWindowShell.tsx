@@ -132,13 +132,18 @@ export const ChatWindowShell: React.FC<ChatWindowShellProps> = ({
                         // bottom-right, wider when expanded. Glass = translucent white so
                         // the host page tints through the (transparent) iframe.
                         className={isMobile
-                            ? "fixed z-50 flex flex-col overflow-hidden inset-0 bg-white shadow-2xl ring-1 ring-black/10"
-                            : `fixed z-50 flex flex-col overflow-hidden bottom-6 right-6 h-[720px] max-h-[calc(100dvh-3rem)] rounded-[28px] bg-white/75 backdrop-blur-2xl ring-1 ring-white/60 shadow-[0_28px_80px_-12px_rgba(15,23,42,0.28)] ${isExpanded ? "w-[860px]" : "w-[480px]"}`
+                            ? "fixed z-50 flex flex-col overflow-hidden inset-0 bg-gradient-to-b from-white via-sky-50 to-sky-100 shadow-2xl ring-1 ring-black/10"
+                            : `fixed z-50 flex flex-col overflow-hidden bottom-6 right-6 h-[720px] max-h-[calc(100dvh-3rem)] rounded-[28px] bg-gradient-to-b from-white/70 via-sky-50/65 to-sky-100/80 backdrop-blur-2xl ring-1 ring-white/60 shadow-[0_28px_80px_-12px_rgba(15,23,42,0.28)] ${isExpanded ? "w-[860px]" : "w-[480px]"}`
                         }
                     >
+                        {/* Soft blue glow — the image's tint comes from a diffuse blue
+                            wash pooling toward the lower half of the card. */}
+                        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+                            <div className="absolute -bottom-28 left-1/2 h-[440px] w-[440px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(125,179,234,0.42)_0%,rgba(191,219,254,0)_70%)] blur-[70px]" />
+                        </div>
                         {/* Header — floats over one continuous surface (no divider). A soft
                             top scrim keeps the controls legible as content slides under it. */}
-                        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between bg-gradient-to-b from-white/85 via-white/45 to-transparent px-4 pb-6 pt-3">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-between bg-gradient-to-b from-sky-50/85 via-sky-50/40 to-transparent px-4 pb-6 pt-3">
                             <div className="pointer-events-auto flex items-center gap-2">
                                 <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)]">
                                     V
@@ -158,7 +163,7 @@ export const ChatWindowShell: React.FC<ChatWindowShellProps> = ({
                                 {onToggleExpand && (
                                     <button
                                         onClick={onToggleExpand}
-                                        className={`h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 ${isMobile ? "hidden" : "flex"}`}
+                                        className={`h-8 w-8 items-center justify-center rounded-full bg-white/50 text-blue-600/80 ring-1 ring-white/60 backdrop-blur transition-colors hover:bg-white/80 hover:text-blue-700 ${isMobile ? "hidden" : "flex"}`}
                                         aria-label={isExpanded ? "Shrink panel" : "Expand panel"}
                                         title={isExpanded ? "Shrink" : "Expand"}
                                     >
@@ -175,7 +180,7 @@ export const ChatWindowShell: React.FC<ChatWindowShellProps> = ({
                                 )}
                                 <button
                                     onClick={onClose}
-                                    className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+                                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/50 text-blue-600/80 ring-1 ring-white/60 backdrop-blur transition-colors hover:bg-white/80 hover:text-blue-700"
                                     aria-label="Close chat"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">

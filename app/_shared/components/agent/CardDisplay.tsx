@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ChatMessage } from '@/app/_shared/types/agentTypes';
 import { Flashcard } from '../flashcard/Flashcard';
-import { SwipeDeck } from '../primitives/SwipeDeck';
+import { CardStack } from '../primitives/CardStack';
 
 interface CardDisplayProps {
     cards: ChatMessage[];
@@ -21,19 +21,15 @@ export const CardDisplay = ({ cards, variant = 'immersive' }: CardDisplayProps) 
     const latestFlashcardId = validCards[validCards.length - 1].id;
     const count = validCards.length;
 
-    // Widget: more than one card → swipeable Tinder-style deck (no scrollbar).
+    // Widget: more than one card → 3D stacked deck (upcoming cards peek from the
+    // top-right; the newest rises to the front as the agent speaks). The pt/pr
+    // headroom keeps the peeking cards from clipping at the container edge.
     if (variant === 'window' && count > 1) {
         return (
             <div className="relative flex w-full flex-col items-center">
-                <SwipeDeck mode="deck" showDots className="z-10 max-w-[min(92vw,30rem)]">
+                <CardStack showDots className="z-10 max-w-[min(92vw,30rem)] pr-6 pt-6">
                     {validCards.map((card) => (
-                        <motion.div
-                            key={card.id}
-                            initial={{ opacity: 0, scale: 0.96 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ type: 'spring', stiffness: 200, damping: 24 }}
-                            className="flex w-full items-start"
-                        >
+                        <div key={card.id} className="flex w-full items-start">
                             <Flashcard
                                 {...card.cardData}
                                 layout="default"
@@ -41,9 +37,9 @@ export const CardDisplay = ({ cards, variant = 'immersive' }: CardDisplayProps) 
                                 layoutId={card.id}
                                 shouldStreamText={card.id === latestFlashcardId}
                             />
-                        </motion.div>
+                        </div>
                     ))}
-                </SwipeDeck>
+                </CardStack>
             </div>
         );
     }
