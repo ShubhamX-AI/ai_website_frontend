@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, PanInfo } from 'framer-motion';
 
 interface CardStackProps {
-    /** One card per child. The last child is treated as the newest. */
+    /** One card per child. */
     children: React.ReactNode[];
     /** Show the dot pager below the stack. */
     showDots?: boolean;
@@ -13,23 +13,26 @@ interface CardStackProps {
     className?: string;
 }
 
+// The per-move animation — same feel as the manual click/drag (do not slow this;
+// the user likes the snap). The *dwell* between auto-moves is AUTO_MS below.
 const SPRING = { type: 'spring' as const, stiffness: 300, damping: 32, mass: 0.7 };
+
+// How long the front card rests before the deck cycles to the next one.
+const AUTO_MS = 3500;
 
 // How many cards peek behind the front one before the rest hide.
 const VISIBLE_BEHIND = 2;
 
 /**
- * CardStack — a 3D stacked deck of cards.
+ * CardStack — a 3D stacked deck of cards that cycles in a loop.
  *
  * The active card sits in front at full size; upcoming cards peek out from the
- * top-right corner behind it (each one nudged up + right, scaled down, faded),
- * giving a sense of depth. Already-viewed cards peel off to the left.
- *
- * Auto-advances ONE step when a new card arrives (so the newest card rises to the
- * front as the agent speaks) — but only while the user is already viewing the
- * latest card. Any manual nav (drag / arrows / dots) parks the deck where the user
- * left it. Used by the window-variant CardDisplay; SwipeDeck still drives the
- * StarterScreen strip.
+ * top-right corner behind it (each nudged up + right, scaled down, faded). On a
+ * slow timer the deck plays ONE loop — first card through the last and back to the
+ * first — then stops. The front card eases back into the stack and the next rises
+ * forward, never peeling off-screen. Manual nav (drag / arrows / dots) wraps
+ * circularly, moves a step, and restarts the loop. Used by the window-variant
+ * CardDisplay; SwipeDeck still drives the StarterScreen.
  */
 export const CardStack: React.FC<CardStackProps> = ({
     children,
@@ -40,21 +43,32 @@ export const CardStack: React.FC<CardStackProps> = ({
     const slides = React.Children.toArray(children);
     const count = slides.length;
 
-    const [index, setIndex] = useState(count - 1);
-    const prevCount = useRef(count);
+    const [index, setIndex] = useState(0);
+    // Bumped on every manual nav so the auto-cycle timer restarts (manual moves
+    // don't fight the timer).
+    const [interactionKey, setInteractionKey] = useState(0);
 
-    // Advance to the newest card when one arrives — but only if the user was
-    // already parked on the previous newest card (don't yank them mid-browse).
+    const wrap = (n: number) => ((n % count) + count) % count;
+
+    // Slow auto-advance for ONE full loop — steps from the first card through the
+    // last and back to the first, then stops (no endless spinning). Restarts when
+    // the card count changes or the user navigates manually.
     useEffect(() => {
-        if (count > prevCount.current) {
-            setIndex((cur) => (cur >= prevCount.current - 1 ? count - 1 : cur));
-        }
-        prevCount.current = count;
-        // Re-clamp if cards were removed.
-        setIndex((cur) => Math.min(cur, count - 1));
-    }, [count]);
+        if (count <= 1) return;
+        let steps = 0;
+        const id = setInterval(() => {
+            setIndex((i) => wrap(i + 1));
+            steps += 1;
+            if (steps >= count) clearInterval(id); // back at the first card → done
+        }, AUTO_MS);
+        return () => clearInterval(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [count, interactionKey]);
 
-    const goTo = (next: number) => setIndex(Math.max(0, Math.min(next, count - 1)));
+    const goTo = (next: number) => {
+        setIndex(wrap(next));
+        setInteractionKey((k) => k + 1);
+    };
 
     const onDragEnd = (_: unknown, info: PanInfo) => {
         const flick = Math.abs(info.velocity.x) > 400;
@@ -68,28 +82,28 @@ export const CardStack: React.FC<CardStackProps> = ({
         return <div className={className}>{slides}</div>;
     }
 
-    const atStart = index === 0;
-    const atEnd = index === count - 1;
-
     return (
         <div className={`flex w-full flex-col items-center ${className}`}>
             <motion.div layout className="relative w-full">
                 {slides.map((slide, i) => {
-                    const depth = i - index; // 0 = front, >0 = upcoming (peek), <0 = viewed
+                    // Circular depth: 0 = front, 1..n behind. The front card cycles
+                    // to the back of the stack rather than peeling off-screen.
+                    const depth = wrap(i - index);
                     const isFront = depth === 0;
+                    const clamped = Math.min(depth, VISIBLE_BEHIND + 1);
 
-                    // Upcoming cards peek up-and-right; viewed cards peel off left.
-                    const target =
-                        depth === 0
-                            ? { x: 0, y: 0, scale: 1, opacity: 1 }
-                            : depth > 0
-                                ? {
-                                    x: depth * 14,
-                                    y: -depth * 12,
-                                    scale: 1 - depth * 0.05,
-                                    opacity: depth <= VISIBLE_BEHIND ? 1 - depth * 0.22 : 0,
-                                }
-                                : { x: -48, y: 14, scale: 0.94, opacity: 0 };
+                    // Front card full opacity; the next VISIBLE_BEHIND peek and fade;
+                    // everything deeper is hidden.
+                    let opacity = 0;
+                    if (isFront) opacity = 1;
+                    else if (depth <= VISIBLE_BEHIND) opacity = 1 - depth * 0.22;
+
+                    const target = {
+                        x: clamped * 14,
+                        y: -clamped * 12,
+                        scale: 1 - clamped * 0.05,
+                        opacity,
+                    };
 
                     return (
                         <motion.div
@@ -97,7 +111,7 @@ export const CardStack: React.FC<CardStackProps> = ({
                             // Front card stays in flow so it drives the container height;
                             // the rest stack absolutely behind it.
                             className={isFront ? 'relative' : 'absolute inset-x-0 top-0'}
-                            style={{ zIndex: 100 - Math.abs(depth) }}
+                            style={{ zIndex: 100 - depth }}
                             animate={target}
                             transition={SPRING}
                             drag={isFront ? 'x' : false}
@@ -110,14 +124,13 @@ export const CardStack: React.FC<CardStackProps> = ({
                     );
                 })}
 
-                {/* Prev / next — for mouse users; drag still works too */}
+                {/* Prev / next — for mouse users; drag still works too. Wraps circularly. */}
                 {showArrows && (
                     <>
                         <button
                             onClick={() => goTo(index - 1)}
-                            disabled={atStart}
                             aria-label="Previous"
-                            className="absolute left-0 top-1/2 z-[200] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-[0_4px_14px_rgba(15,23,42,0.15)] ring-1 ring-black/5 backdrop-blur transition-all hover:bg-white disabled:pointer-events-none disabled:opacity-0"
+                            className="absolute left-0 top-1/2 z-[200] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-[0_4px_14px_rgba(15,23,42,0.15)] ring-1 ring-black/5 backdrop-blur transition-all hover:bg-white"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -125,9 +138,8 @@ export const CardStack: React.FC<CardStackProps> = ({
                         </button>
                         <button
                             onClick={() => goTo(index + 1)}
-                            disabled={atEnd}
                             aria-label="Next"
-                            className="absolute right-0 top-1/2 z-[200] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-[0_4px_14px_rgba(15,23,42,0.15)] ring-1 ring-black/5 backdrop-blur transition-all hover:bg-white disabled:pointer-events-none disabled:opacity-0"
+                            className="absolute right-0 top-1/2 z-[200] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-[0_4px_14px_rgba(15,23,42,0.15)] ring-1 ring-black/5 backdrop-blur transition-all hover:bg-white"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} className="h-4 w-4">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
