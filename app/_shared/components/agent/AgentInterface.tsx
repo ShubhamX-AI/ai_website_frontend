@@ -18,6 +18,11 @@ interface AgentInterfaceProps {
      * VoiceDock widen with the card instead of staying pinned to its narrow cap.
      */
     isExpanded?: boolean;
+    /**
+     * Window variant only: the card is freely drag-resized (fluid). The VoiceDock
+     * grows with the card width up to its cap instead of using fixed preset widths.
+     */
+    fluid?: boolean;
 }
 
 /**
@@ -30,7 +35,7 @@ interface AgentInterfaceProps {
  * Both read from the same message stream; neither works alone. Used by /dynamic
  * (immersive), the Vani window, and the /embed widget.
  */
-export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect, variant = 'immersive', isExpanded = false }) => {
+export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect, variant = 'immersive', isExpanded = false, fluid = false }) => {
     const {
         agentState,
         mode,
@@ -152,6 +157,7 @@ export const AgentInterface: React.FC<AgentInterfaceProps> = ({ onDisconnect, va
                 userTrack={userTrack}
                 variant={variant}
                 isExpanded={isExpanded}
+                fluid={fluid}
             />
         </div>
     );

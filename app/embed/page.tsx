@@ -37,6 +37,13 @@ function postResize(mode: "collapsed" | "open", width?: number) {
     window.parent.postMessage({ type: "vani:resize", mode, width }, "*");
 }
 
+// Tell the host a corner-resize drag has begun. The host then owns the gesture
+// (overlay + pointer capture) and resizes the iframe directly — see widget.js.
+function postDragStart(pointerId: number, button: number) {
+    if (typeof window === "undefined") return;
+    window.parent.postMessage({ type: "vani:resize-drag-start", pointerId, button, edge: "corner" }, "*");
+}
+
 export default function EmbedPage() {
     const [isOpen, setIsOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -44,6 +51,9 @@ export default function EmbedPage() {
     // breakpoint can't be trusted here, it keys off the iframe width. Default desktop;
     // corrected as soon as the host pings.
     const [isMobileHost, setIsMobileHost] = useState(false);
+    // Host-persisted free (dragged) iframe size, if any. When set, the card goes
+    // fluid (fills the iframe) and we skip the preset width post on open.
+    const [hostFree, setHostFree] = useState<{ w: number; h: number } | null>(null);
     const { token, error, connect, disconnect } = useLiveKitConnection();
 
     // Connect on open, disconnect on close — room lifecycle follows the card.
@@ -58,7 +68,10 @@ export default function EmbedPage() {
     // loader sends the first one even if it mounted before us.
     useEffect(() => {
         function onHostMessage(e: MessageEvent) {
-            if (e.data?.type === "vani:host") setIsMobileHost(!!e.data.isMobile);
+            if (e.data?.type === "vani:host") {
+                setIsMobileHost(!!e.data.isMobile);
+                setHostFree(e.data.freeSize ?? null);
+            }
         }
         window.addEventListener("message", onHostMessage);
         window.parent.postMessage({ type: "vani:ready" }, "*");
@@ -69,8 +82,10 @@ export default function EmbedPage() {
     // expand/shrink. Collapsing back is deferred to onExitComplete so the pop-out
     // animation isn't clipped by an early shrink.
     useEffect(() => {
-        if (isOpen) postResize("open", isExpanded ? WIDTH_EXPANDED : WIDTH_DEFAULT);
-    }, [isOpen, isExpanded]);
+        // With a saved free size the host already applies the box on open — posting a
+        // preset width here would clear it (and flash 480px), so skip it.
+        if (isOpen && !hostFree) postResize("open", isExpanded ? WIDTH_EXPANDED : WIDTH_DEFAULT);
+    }, [isOpen, isExpanded, hostFree]);
 
     const handleClose = useCallback(() => {
         setIsOpen(false);
@@ -90,6 +105,8 @@ export default function EmbedPage() {
             isExpanded={isExpanded}
             onToggleExpand={() => setIsExpanded((v) => !v)}
             onExitComplete={() => postResize("collapsed")}
+            freeSize={!!hostFree}
+            onResizeStart={postDragStart}
             launcherClassName="bottom-4 right-4"
         />
     );

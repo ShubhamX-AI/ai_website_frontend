@@ -54,6 +54,13 @@
     var CARD_HEIGHT = 720;
     var CARD_BUFFER = 96;
 
+    // Free drag-resize: minimum usable iframe box (header + dock + one card). Max is
+    // the viewport. The chosen size is persisted per HOST origin so it survives reopen.
+    var MIN_W = 360;
+    var MIN_H = 420;
+    var STORAGE_KEY = "vani:size:" + window.location.origin;
+    var IFRAME_TRANSITION = "width 180ms ease, height 180ms ease";
+
     /**
      * Resolve where /embed is served from. Priority:
      *   1. explicit opts.origin (our SPA passes location.origin)
@@ -84,7 +91,15 @@
      */
     function mountWidget(opts, scriptEl) {
         var origin = resolveOrigin(opts, scriptEl);
-        var state = { mode: "collapsed", width: 480 };
+        // `free` = a user-dragged iframe-box size {w,h} or null (use presets). Loaded
+        // from the host's localStorage so a dragged size persists across reopen.
+        var state = { mode: "collapsed", width: 480, free: null };
+        try {
+            var saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "null");
+            if (saved && saved.w >= MIN_W && saved.h >= MIN_H) state.free = saved;
+        } catch (e) {
+            /* localStorage blocked (private mode / sandboxed) — fall back to presets */
+        }
 
         var iframe = document.createElement("iframe");
         iframe.src = origin + "/embed";
@@ -103,6 +118,7 @@
             background: "transparent",
             colorScheme: "normal",
             zIndex: "2147483647", // max — sit above any host overlay
+            transition: IFRAME_TRANSITION, // smooth preset/resize; killed during drag
         };
         Object.keys(base).forEach(function (k) {
             iframe.style[k] = base[k];
@@ -140,9 +156,24 @@
             s.height = h + "px";
         }
 
+        // Free drag size — anchored bottom-right like applyOpen, but width AND height
+        // are arbitrary (bypasses the CARD_HEIGHT clamp), bounded by [MIN, viewport].
+        function applyFree(w, h) {
+            var s = iframe.style;
+            s.top = "auto";
+            s.left = "auto";
+            s.bottom = "0px";
+            s.right = "0px";
+            s.width = Math.min(Math.max(w, MIN_W), window.innerWidth) + "px";
+            s.height = Math.min(Math.max(h, MIN_H), window.innerHeight) + "px";
+        }
+
         function render() {
-            if (state.mode === "open") applyOpen(state.width);
-            else applyCollapsed();
+            if (state.mode !== "open") { applyCollapsed(); return; }
+            // Mobile is always a full-screen sheet — ignore any dragged desktop size.
+            if (isMobile()) { applyOpen(state.width); return; }
+            if (state.free) { applyFree(state.free.w, state.free.h); return; }
+            applyOpen(state.width);
         }
 
         // Tell /embed the host form factor. It can't trust its own CSS breakpoints
@@ -151,9 +182,85 @@
         function notifyForm() {
             if (!iframe.contentWindow) return;
             iframe.contentWindow.postMessage(
-                { type: "vani:host", isMobile: isMobile() },
+                // freeSize lets /embed switch to the fluid card immediately on open, so
+                // it never flashes the 480px preset before the host applies the saved box.
+                { type: "vani:host", isMobile: isMobile(), freeSize: state.free || null },
                 origin
             );
+        }
+
+        // ── Free drag-resize ──────────────────────────────────────────────────────
+        // The handle lives inside the iframe (React), but the gesture is driven HERE:
+        // on drag-start we drop a transparent full-viewport overlay on the HOST and
+        // capture the pointer on IT, so events are never lost when the iframe shrinks
+        // under the cursor. We resize the iframe directly (rAF-throttled).
+        var overlay = null;
+        var drag = null;
+        var rafId = 0;
+        var pending = null;
+
+        function flushDrag() {
+            rafId = 0;
+            if (!pending) return;
+            applyFree(pending.w, pending.h);
+            pending = null;
+        }
+
+        function onDragMove(e) {
+            if (!drag) return;
+            if (drag.anchorX === null) { drag.anchorX = e.clientX; drag.anchorY = e.clientY; }
+            // Anchored bottom-right: moving the cursor up-and-left (negative delta) grows the box.
+            var dx = e.clientX - drag.anchorX;
+            var dy = e.clientY - drag.anchorY;
+            if (Math.abs(dx) > 2 || Math.abs(dy) > 2) drag.moved = true;
+            pending = { w: drag.startW - dx, h: drag.startH - dy };
+            if (!rafId) rafId = window.requestAnimationFrame(flushDrag);
+        }
+
+        function endDrag() {
+            if (!drag) return;
+            if (drag.moved) {
+                var r = iframe.getBoundingClientRect();
+                state.free = { w: Math.round(r.width), h: Math.round(r.height) };
+                try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.free)); } catch (e) { /* ignore */ }
+            } else {
+                // A click with no real drag — don't lock in a custom size; revert to preset.
+                state.free = null;
+                try { window.localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+                render();
+                notifyForm();
+            }
+            if (overlay) {
+                overlay.removeEventListener("pointermove", onDragMove);
+                overlay.removeEventListener("pointerup", endDrag);
+                overlay.removeEventListener("pointercancel", endDrag);
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }
+            overlay = null;
+            drag = null;
+            if (rafId) { window.cancelAnimationFrame(rafId); rafId = 0; }
+            pending = null;
+            iframe.style.transition = IFRAME_TRANSITION; // re-enable smooth programmatic resizes
+        }
+
+        function startDrag(d) {
+            if (isMobile() || drag) return;
+            iframe.style.transition = "none"; // no per-frame lag during the drag
+            var r = iframe.getBoundingClientRect();
+            drag = { startW: r.width, startH: r.height, anchorX: null, anchorY: null, moved: false };
+            // Flip to free mode at the current size immediately so the card inside goes
+            // fluid and grows with the iframe live (instead of waiting for drag end).
+            state.mode = "open";
+            state.free = { w: Math.round(r.width), h: Math.round(r.height) };
+            notifyForm();
+            overlay = document.createElement("div");
+            overlay.style.cssText =
+                "position:fixed;inset:0;z-index:2147483647;background:transparent;cursor:nwse-resize;";
+            document.body.appendChild(overlay);
+            overlay.addEventListener("pointermove", onDragMove);
+            overlay.addEventListener("pointerup", endDrag);
+            overlay.addEventListener("pointercancel", endDrag);
+            try { overlay.setPointerCapture(d.pointerId); } catch (e) { /* capture optional */ }
         }
 
         // Resize / ready requests from /embed. Named so destroy() can remove it.
@@ -166,14 +273,30 @@
                 notifyForm();
                 return;
             }
+            // Corner-handle pointerdown inside the iframe → host takes over the gesture.
+            if (data.type === "vani:resize-drag-start") {
+                startDrag(data);
+                return;
+            }
             if (data.type !== "vani:resize") return;
             state.mode = data.mode === "open" ? "open" : "collapsed";
             if (typeof data.width === "number") state.width = data.width;
+            // The preset expand/collapse path wins over a custom drag: clear the saved
+            // free size so the preset takes effect (drag = custom, button = preset).
+            if (data.mode === "open") {
+                state.free = null;
+                try { window.localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+            }
             render();
         }
 
         // Re-apply geometry and re-tell /embed on viewport changes (rotation, resize).
         function onResize() {
+            // Never let a saved size exceed the (possibly shrunk) viewport.
+            if (state.free) {
+                state.free.w = Math.min(state.free.w, window.innerWidth);
+                state.free.h = Math.min(state.free.h, window.innerHeight);
+            }
             render();
             notifyForm();
         }
@@ -199,6 +322,11 @@
                 window.removeEventListener("resize", onResize);
                 iframe.removeEventListener("load", notifyForm);
                 document.removeEventListener("DOMContentLoaded", attach);
+                // Tear down a mid-flight drag (overlay + rAF) if any.
+                if (rafId) { window.cancelAnimationFrame(rafId); rafId = 0; }
+                if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                overlay = null;
+                drag = null;
                 if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
             },
         };

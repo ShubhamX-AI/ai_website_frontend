@@ -15,7 +15,7 @@ interface CardCarouselProps {
 }
 
 // How long the active card rests before the carousel auto-advances one step.
-const AUTO_MS = 3500;
+const AUTO_MS = 6000;
 
 /**
  * CardCarousel — a single-card slide carousel.
@@ -27,8 +27,9 @@ const AUTO_MS = 3500;
  * no dead space below short cards, and the side arrows (vertically centered) sit
  * on the real content instead of floating in an empty tall cell.
  *
- * On a slow timer it plays ONE loop forward then rests. Manual nav (drag / arrows
- * / dots) moves a step and restarts the loop.
+ * On a slow timer it plays ONE forward pass then rests on the last card. The first
+ * manual nav (drag / arrows / dots) cancels auto-advance for good — it never yanks
+ * the user back to the end again.
  */
 export const CardCarousel: React.FC<CardCarouselProps> = ({
     children,
@@ -40,8 +41,11 @@ export const CardCarousel: React.FC<CardCarouselProps> = ({
     const count = slides.length;
 
     const [index, setIndex] = useState(0);
-    // Bumped on every manual nav so the auto-advance timer restarts.
-    const [interactionKey, setInteractionKey] = useState(0);
+    // Once the user navigates manually, auto-advance is cancelled for good — it must
+    // never re-arm and drag them back to the last card.
+    const userControlRef = useRef(false);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const stopAuto = () => { if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
 
     // Per-card measured heights → wrapper animates to the active card's height.
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -68,22 +72,25 @@ export const CardCarousel: React.FC<CardCarouselProps> = ({
 
     const clamp = (n: number) => Math.max(0, Math.min(count - 1, n));
 
-    // Slow auto-advance for ONE forward pass, then stop. Restarts on count change / nav.
+    // Slow auto-advance for ONE forward pass, then rest on the last card. Guarded by
+    // userControlRef so it never re-arms after a manual nav. Depends on `count` only,
+    // so a streaming deck extends the pass to newly arrived cards.
     useEffect(() => {
-        if (count <= 1) return;
-        const id = setInterval(() => {
+        if (count <= 1 || userControlRef.current) return;
+        timerRef.current = setInterval(() => {
             setIndex((i) => {
-                if (i >= count - 1) { clearInterval(id); return i; }
+                if (i >= count - 1) { stopAuto(); return i; }
                 return i + 1;
             });
         }, AUTO_MS);
-        return () => clearInterval(id);
+        return stopAuto;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [count, interactionKey]);
+    }, [count]);
 
     const goTo = (next: number) => {
+        userControlRef.current = true; // user took over — kill auto-advance for good
+        stopAuto();
         setIndex(clamp(next));
-        setInteractionKey((k) => k + 1);
     };
 
     const onDragEnd = (_: unknown, info: PanInfo) => {
