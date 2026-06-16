@@ -259,7 +259,7 @@ export const Flashcard = React.memo(({
             className={`
                 relative ${isNeon ? 'overflow-hidden' : 'overflow-visible'}
                 ${themeClass}
-                ${chromeless ? 'px-1 py-2' : 'p-5 md:p-8'} w-full
+                ${chromeless ? 'px-5 py-5' : 'p-5 md:p-8'} w-full
                 group flex flex-col h-full transition-colors
             `}
         >
