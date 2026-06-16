@@ -9,7 +9,7 @@ export interface FlashcardMedia {
 
 export interface FlashcardStyle {
     icon?: { type: 'static'; ref: string; fallback?: string };
-    visual_intent?: 'neutral' | 'urgent' | 'success' | 'warning' | 'processing' | 'cyberpunk';
+    visual_intent?: 'neutral' | 'urgent' | 'success' | 'warning' | 'processing';
 }
 
 // ─── Rich flashcard body ────────────────────────────────────────────────────
@@ -132,6 +132,9 @@ export interface ChatMessage {
         // drives a structured renderer; otherwise `value` markdown is used.
         content_kind?: FlashcardContentKind;
         content?: FlashcardContent;
+        // rich_card extras: checklist rows + footer tag pills
+        bullets?: string[];
+        chips?: string[];
     } & FlashcardStyle;
     contactFormData?: ContactFormData;
     locationRequestData?: LocationRequestData;

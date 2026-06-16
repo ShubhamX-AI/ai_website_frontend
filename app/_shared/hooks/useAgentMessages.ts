@@ -68,7 +68,8 @@ export function useAgentMessages() {
                 console.log('--- INCOMING DATA CHANNEL MESSAGE ---', { topic, data });
 
                 // Check either topic or data type for flashcards
-                if (topic === 'ui.flashcard' || data.type === 'flashcard') {
+                if (topic === 'ui.flashcard' || topic === 'ui.rich_card'
+                    || data.type === 'flashcard' || data.type === 'rich_card') {
                     const id = `card-${Date.now()}-${Math.random()}`;
                     const streamId = data.stream_id || null;
 
@@ -118,7 +119,8 @@ export function useAgentMessages() {
                             type: 'flashcard',
                             cardData: {
                                 title: data.title || "Information",
-                                value: data.value || JSON.stringify(data),
+                                // rich_card sends markdown in `content`; flashcard in `value`
+                                value: data.value || data.content || JSON.stringify(data),
                                 stream_id: streamId,
                                 card_index: data.card_index,
                                 visual_intent: data.visual_intent,
@@ -131,6 +133,9 @@ export function useAgentMessages() {
                                 // Rich body passthrough — missing → markdown fallback
                                 content_kind: data.content_kind,
                                 content: data.content,
+                                // rich_card extras
+                                bullets: data.bullets?.length ? data.bullets : undefined,
+                                chips: data.chips?.length ? data.chips : undefined,
                             },
                             sender: 'agent',
                             timestamp: Date.now(),

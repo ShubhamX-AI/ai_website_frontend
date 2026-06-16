@@ -41,7 +41,7 @@ The AI is a LiveKit voice/text agent, not a request/response API:
 3. `useAgentInteraction` composes three hooks:
    - `useAgentMessages` — parses inbound LiveKit **data-channel** messages and
      transcriptions into a `Map<id, ChatMessage>`. UI is message-type driven
-     (topics like `ui.flashcard`, `ui.contact_form`, `ui.meeting_form`,
+     (topics like `ui.flashcard`, `ui.rich_card`, `ui.contact_form`, `ui.meeting_form`,
      `map.polyline`, `ui.global_presence`, `ui.nearby_offices`, `ui.office_details`,
      `ui.job_application`, `ui.location_request`).
    - `useInteractionControl` — voice/text mode, mic toggle, `sendText` (topic `lk.chat`).
@@ -50,6 +50,20 @@ The AI is a LiveKit voice/text agent, not a request/response API:
 
 Message/UI shapes live in `app/_shared/types/agentTypes.ts` (`ChatMessage` and the
 per-feature data types). Import types from there, not through the hooks.
+
+**Flashcard / rich text card.** `ui.flashcard` and `ui.rich_card` both parse into the
+same `flashcard` `ChatMessage` and render through `Flashcard` (`_shared/components/flashcard/`).
+The agent's `publish_rich_card` tool sends `{title, content (markdown), bullets[], chips[],
+visual_intent, icon}`; `content` maps to `cardData.value`. `Flashcard` renders markdown via
+custom `ReactMarkdown` `MD_COMPONENTS` (blue check-circle bullets, accent-barred headings,
+gradient dividers), then the structured `bullets` as a check list and `chips` as footer
+pills with icons auto-derived from the label (`chipIcon` in `flashcardThemes.ts`).
+`visual_intent` (`neutral|urgent|success|warning|processing`) picks the accent via
+`INTENT_COLORS`. Entrance is Apple-style: the `.md-stagger` CSS cascade (`globals.css`) +
+`cardVariants` spring. In the **window** variant the card renders `chromeless` inside a
+white elevated panel — the panel (rounded, ring, shadow, symmetric padding) is applied to
+the `CardCarousel` root in `CardDisplay`, not per-card, so the carousel's `overflow-hidden`
+slide-clip doesn't clip the shadow.
 
 ### Auth
 

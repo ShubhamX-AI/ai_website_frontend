@@ -28,9 +28,12 @@ export const CardDisplay = ({ cards, variant = 'immersive' }: CardDisplayProps) 
     if (variant === 'window') {
         return (
             <div className="relative flex w-full flex-col items-center">
-                <CardCarousel showDots={count > 1} className="z-10 max-w-[min(94vw,30rem)]">
+                <CardCarousel
+                    showDots={count > 1}
+                    className="z-10 w-full max-w-[min(94vw,30rem)] rounded-[1.75rem] bg-white ring-1 ring-black/[0.06] shadow-[0_14px_44px_-12px_rgba(15,23,42,0.28)] px-6 py-6 md:px-7 md:py-7"
+                >
                     {validCards.map((card) => (
-                        <div key={card.id} className="flex w-full h-full items-start">
+                        <div key={card.id} className="flex w-full items-center justify-center">
                             <Flashcard
                                 {...card.cardData}
                                 layout="default"

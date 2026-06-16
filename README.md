@@ -140,15 +140,26 @@ immersive `/dynamic` view does not use:
   with a streaming caret as she talks.
 - **Swipeable starter strip** — starter questions move to the bottom as a swipe strip
   (click to send) instead of a centered list.
-- **Card stack** — agent flashcards render as a 3D stacked deck (`CardStack`): the
-  front card sits full-size, the rest peek from the top-right corner. It plays one
-  slow auto-cycle (first → last → back to first) then stops; drag / arrows / dots
-  navigate manually. (The immersive `/dynamic` view keeps the vertical grid.)
+- **Card carousel** — agent flashcards render ONE at a time in a sliding filmstrip
+  (`CardCarousel`): the active card is centered, the rest are clipped off-screen (no
+  peeking). It plays one slow auto-advance (first → last) then rests; drag / arrows /
+  dots navigate manually. (The immersive `/dynamic` view keeps the vertical grid.)
+- **White elevated card** — the carousel sits in a crisp white rounded panel (ring +
+  soft shadow + symmetric padding) floating on the blue-glass window, so the text card
+  reads cleanly like a standalone card. The surface is applied to the `CardCarousel`
+  root, not per-card, so the carousel's `overflow-hidden` slide-clip never clips the
+  shadow; cards render `chromeless` (flat) inside it.
 
-`CardStack` and `SwipeDeck` both live in `_shared/components/primitives/` (the
-starter strip uses `SwipeDeck`; flashcards use `CardStack`). The window card surface
-also carries a soft blue tint. All of this is gated on `variant === 'window'`, so
-`/dynamic` is unchanged.
+`CardCarousel` and `SwipeDeck` both live in `_shared/components/primitives/` (the
+starter strip uses `SwipeDeck`; flashcards use `CardCarousel`). All of this is gated on
+`variant === 'window'`, so `/dynamic` is unchanged.
+
+**Rich text cards.** The agent's `publish_rich_card` tool (`ui.rich_card`) sends a
+text-only card — `{title, content (markdown), bullets[], chips[], visual_intent, icon}` —
+for answers with no image/map/form. It renders through the same `Flashcard`: markdown body
+(blue check bullets, accent headings, dividers), a structured `bullets` checklist, and
+`chips` footer pills whose icons are auto-derived from each label. Images stay on
+`publish_ui_stream`; rich cards are text-only.
 
 ### Test it locally
 

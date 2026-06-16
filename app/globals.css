@@ -67,3 +67,43 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans);
 }
+
+/* ─── Apple-style markdown reveal ────────────────────────────────────────────
+   Direct children of .md-stagger rise + un-blur in a soft cascade (keynote-style
+   bullets). Easing is ease-out-expo; ~60ms steps, capped so long bodies don't
+   crawl. Disabled under prefers-reduced-motion. */
+@keyframes md-rise {
+  from { opacity: 0; transform: translateY(7px); filter: blur(5px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+.md-stagger > * {
+  animation: md-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.md-stagger > *:nth-child(1)  { animation-delay: 0.04s; }
+.md-stagger > *:nth-child(2)  { animation-delay: 0.10s; }
+.md-stagger > *:nth-child(3)  { animation-delay: 0.16s; }
+.md-stagger > *:nth-child(4)  { animation-delay: 0.22s; }
+.md-stagger > *:nth-child(5)  { animation-delay: 0.28s; }
+.md-stagger > *:nth-child(6)  { animation-delay: 0.34s; }
+.md-stagger > *:nth-child(7)  { animation-delay: 0.40s; }
+.md-stagger > *:nth-child(n+8) { animation-delay: 0.46s; }
+
+/* Check-list rows inside .md-stagger lists cascade too. */
+.md-stagger ul > li,
+.md-stagger ol > li {
+  animation: md-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.md-stagger li:nth-child(1) { animation-delay: 0.06s; }
+.md-stagger li:nth-child(2) { animation-delay: 0.13s; }
+.md-stagger li:nth-child(3) { animation-delay: 0.20s; }
+.md-stagger li:nth-child(4) { animation-delay: 0.27s; }
+.md-stagger li:nth-child(5) { animation-delay: 0.34s; }
+.md-stagger li:nth-child(n+6) { animation-delay: 0.41s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .md-stagger > *,
+  .md-stagger li {
+    animation: none;
+  }
+}
