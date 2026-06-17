@@ -1,7 +1,11 @@
+'use client';
+
 import React from 'react';
 import dynamic from 'next/dynamic';
 import type { ChatMessage } from '../../types/agentTypes';
 import type { VisualMessageFilters } from './useVisualMessageFilters';
+import { useScrollAffordance } from '../../hooks/useScrollAffordance';
+import { ScrollHint } from '../primitives/ScrollHint';
 import { ContactForm } from '../forms/ContactForm';
 import { ContactFormSubmit } from '../forms/ContactFormSubmit';
 import { JobApplicationForm } from '../forms/JobApplicationForm';
@@ -68,6 +72,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     isAgentInterim,
 }) => {
     const isWindow = variant === 'window';
+    const { ref: scrollRef, canScrollDown, scrollDown } = useScrollAffordance<HTMLDivElement>();
 
     const {
         latestVisualMessage,
@@ -84,7 +89,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     } = visuals;
 
     const className = [
-        'absolute inset-0 flex flex-col items-center overflow-y-auto overflow-x-hidden z-0 scrollbar-hide transition-all duration-500',
+        'h-full w-full flex flex-col items-center overflow-y-auto overflow-x-hidden z-0 scrollbar-hide transition-all duration-500',
         isWindow ? 'p-4 pt-14 pb-28' : 'p-4 pt-20 pb-40 md:p-12 md:pb-32',
         agentState === 'thinking' ? 'blur-sm scale-95 opacity-50' : 'blur-0 scale-100 opacity-100',
     ].join(' ');
@@ -179,19 +184,26 @@ export const Canvas: React.FC<CanvasProps> = ({
     ) : null);
 
     return (
-        <div className={className}>
-            {content ? (
-                <div className="m-auto flex w-full flex-col items-center">
-                    {content}
-                </div>
-            ) : (
-                <StarterScreen
-                    variant={variant}
-                    onQuestionClick={sendText}
-                    agentText={agentText}
-                    isAgentInterim={isAgentInterim}
-                />
-            )}
+        <div className="absolute inset-0">
+            <div ref={scrollRef} className={className}>
+                {content ? (
+                    <div className="m-auto flex w-full flex-col items-center">
+                        {content}
+                    </div>
+                ) : (
+                    <StarterScreen
+                        variant={variant}
+                        onQuestionClick={sendText}
+                        agentText={agentText}
+                        isAgentInterim={isAgentInterim}
+                    />
+                )}
+            </div>
+            <ScrollHint
+                show={canScrollDown}
+                onClick={scrollDown}
+                className={isWindow ? 'bottom-24' : 'bottom-28 md:bottom-24'}
+            />
         </div>
     );
 };
