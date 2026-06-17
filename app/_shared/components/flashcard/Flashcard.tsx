@@ -8,6 +8,7 @@ import {
     StatContent,
     StepsContent,
     LogoContent,
+    InfographicSection,
 } from '@/app/_shared/types/agentTypes';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -16,6 +17,8 @@ import { RichMedia } from '../media/RichMedia';
 import { INTENT_COLORS, chipIcon } from './flashcardThemes';
 import { cardVariants } from './flashcardAnimations';
 import { CheckDot, MD_COMPONENTS } from './markdownComponents';
+import { SectionBlock } from '../infographic/blocks';
+import { ACCENT_RAIL, SURFACE } from '../designTokens';
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -29,6 +32,9 @@ interface FlashcardProps {
     /** rich_card: checklist rows (blue check) + footer tag pills. */
     bullets?: string[];
     chips?: string[];
+    /** Rich flashcard: same typed blocks an infographic renders, shown below the
+     *  image/value. Their presence promotes the card to an elevated surface. */
+    sections?: InfographicSection[];
     // Layout is passed by AgentInterface based on grid context — NOT from backend
     layout?: 'default' | 'horizontal' | 'centered';
     layoutId?: string;
@@ -141,6 +147,7 @@ export const Flashcard = React.memo(({
     content,
     bullets,
     chips,
+    sections,
     layout = 'default',
     layoutId,
     shouldStreamText = false,
@@ -149,6 +156,11 @@ export const Flashcard = React.memo(({
 
     // Derive accent color purely from visual_intent
     const colors = INTENT_COLORS[visual_intent ?? 'neutral'] ?? INTENT_COLORS.neutral;
+
+    // Rich flashcard: typed blocks promote the card to its OWN elevated surface
+    // (accent rail + ring + shadow), so it reads as a sibling of the infographic
+    // and the office cards — not a flat note on the glass.
+    const hasSections = Boolean(sections && sections.length > 0);
 
     // Theme: the card floats on a soft scrim — no card box (no ring / hard shadow),
     // just a faint blur halo for legibility. `chromeless` (widget) drops the scrim
@@ -250,24 +262,44 @@ export const Flashcard = React.memo(({
             exit="exit"
             variants={cardVariants}
             className={`
-                relative overflow-visible @container/card
-                ${chromeless ? '' : 'backdrop-blur-md'}
-                ${chromeless ? '' : 'p-5 @md:p-8'} w-full
-                group flex flex-col ${chromeless ? '' : 'h-full'} transition-colors
+                relative @container/card w-full group flex flex-col transition-colors
+                ${hasSections
+                    ? `overflow-hidden ${SURFACE}`
+                    : `overflow-visible ${chromeless ? '' : 'backdrop-blur-md p-5 @md:p-8 h-full'}`}
             `}
         >
+            {/* Rich card owns a polished box: signature blue→emerald top rail +
+                ambient depth, matching the infographic and the office cards. */}
+            {hasSections && (
+                <>
+                    <div className={`h-1 w-full ${ACCENT_RAIL}`} />
+                    <div className={`pointer-events-none absolute -right-20 -top-16 h-48 w-48 rounded-full ${colors.glow} blur-[60px] opacity-40`} />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-white to-slate-50/60" />
+                    <div
+                        className="pointer-events-none absolute inset-0 opacity-[0.5]"
+                        style={{
+                            backgroundImage: 'radial-gradient(rgba(15,23,42,0.045) 1px, transparent 1px)',
+                            backgroundSize: '22px 22px',
+                            maskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 75%)',
+                            WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 75%)',
+                        }}
+                    />
+                </>
+            )}
+
             {/* Soft scrim: a faint blurred halo that hugs the content so text/image
                 stay legible on the blue surface — reads as floating, not a card box.
-                `chromeless` (widget) drops it so the card sits flat on the window glass. */}
-            {!chromeless && (
+                `chromeless` (widget) drops it so the card sits flat on the window glass.
+                Only for flat (non-rich) cards — rich cards have their own surface. */}
+            {!hasSections && !chromeless && (
                 <div className="pointer-events-none absolute -inset-3 @md:-inset-5 -z-10 rounded-[2rem] @md:rounded-[2.5rem] bg-[radial-gradient(120%_120%_at_50%_30%,rgba(255,255,255,0.78)_0%,rgba(255,255,255,0.42)_45%,rgba(255,255,255,0)_78%)]" />
             )}
-            {/* Ambient color glow — the floating halo (non-chromeless only) */}
-            {!chromeless && (
+            {!hasSections && !chromeless && (
                 <div className={`pointer-events-none absolute -right-16 -top-16 -z-10 h-40 w-40 @md:h-64 @md:w-64 rounded-full ${colors.glow} blur-[40px] @md:blur-[70px] opacity-20 @md:opacity-30`} />
             )}
 
             <div className={`relative z-10 flex flex-col
+                ${hasSections ? 'p-5 @md:p-7' : ''}
                 ${layout === 'horizontal' ? 'gap-4 @md:flex-row @md:items-center @md:gap-6' : 'gap-4 @md:gap-5'}
                 ${layout === 'centered'   ? 'justify-center text-center items-center' : ''}
             `}>
@@ -367,6 +399,24 @@ export const Flashcard = React.memo(({
                             </>
                         )}
                     </div>
+
+                    {/* Rich blocks — the same typed sections an infographic renders,
+                        staggered in below the image/value. Shared SectionBlock so
+                        flashcard and infographic blocks never drift in styling. */}
+                    {hasSections && (
+                        <div className="mt-5 flex flex-col gap-5 @md:mt-6 @md:gap-6">
+                            {sections!.map((section, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.12 + i * 0.08, type: 'spring', stiffness: 200, damping: 24 }}
+                                >
+                                    <SectionBlock section={section} colors={colors} />
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Checklist — structured bullets from rich_card (blue check rows) */}
                     {bullets && bullets.length > 0 && (

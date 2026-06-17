@@ -158,6 +158,8 @@ export function useAgentMessages() {
                                     content: data.content,
                                     bullets: data.bullets?.length ? data.bullets : undefined,
                                     chips: data.chips?.length ? data.chips : undefined,
+                                    // Rich blocks — same schema as infographic; missing → flat card
+                                    sections: data.sections?.length ? data.sections : undefined,
                                 },
                                 sender: 'agent',
                                 timestamp: Date.now(),
