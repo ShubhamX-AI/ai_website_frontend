@@ -192,6 +192,9 @@ export interface ChatMessage {
         // rich_card extras: checklist rows + footer tag pills
         bullets?: string[];
         chips?: string[];
+        // Rich flashcard: the same typed blocks an infographic renders, shown
+        // below the image/value. Reuses the infographic Section union (one source).
+        sections?: InfographicSection[];
     } & FlashcardStyle;
     infographicData?: InfographicData;
     contactFormData?: ContactFormData;

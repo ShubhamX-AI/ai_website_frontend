@@ -78,7 +78,9 @@ and `chips`. `PresetGraphic` maps a key (`devops_loop`, `cicd_pipeline`, `cloud_
 renders nothing on an unknown key; keep the key list in sync with the backend prompt. Unknown section types
 degrade to a markdown block. `visual_intent` (`neutral|urgent|success|warning|processing`)
 picks the accent via `INTENT_COLORS`. Entrance is Apple-style: `.md-stagger` cascade +
-`cardVariants` spring.
+`cardVariants` spring. The backend payload shape + canonical preset-key list live in
+`docs/INFOGRAPHIC_BACKEND_SPEC.md` — the source of truth when adding section types or
+preset keys.
 
 ### Auth
 
@@ -137,6 +139,7 @@ Conventions:
   (`LiveKitAssistantProvider`, `SimpleVoiceAssistant`, transcription hooks),
   separate from the `app/dynamic` implementation.
 - `types/globals.d.ts` — declares non-JS imports (e.g. `*.css`) for TypeScript.
+- `docs/` — backend contract specs (e.g. `INFOGRAPHIC_BACKEND_SPEC.md`).
 - Styling is Tailwind v4 (no config file; theme vars in `app/globals.css`),
   inline classNames only, framer-motion for animation. Light theme (`slate`/`blue`).
 
