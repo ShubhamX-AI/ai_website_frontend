@@ -8,17 +8,25 @@ interface MeetingFormProps {
 }
 
 export const MeetingForm: React.FC<MeetingFormProps> = ({ data }) => {
-    // Format date string for better display
-    const formattedDate = new Date(data.start_time).toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
-    const formattedTime = new Date(data.start_time).toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+    // Safely parse the start time — agent may send blank/invalid values
+    const dt = data.start_time ? new Date(data.start_time) : null;
+    const validDate = dt !== null && !isNaN(dt.getTime());
+    const formattedDate = validDate
+        ? dt!.toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+          })
+        : null;
+    const formattedTime = validDate
+        ? dt!.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+          })
+        : null;
+    const validDuration =
+        typeof data.duration_hours === 'number' && !isNaN(data.duration_hours);
 
     return (
         <motion.div
@@ -81,12 +89,22 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({ data }) => {
                                 </svg>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-sm font-bold text-zinc-900">{formattedDate}</p>
-                                <p className="text-sm text-zinc-500">{formattedTime} • {data.duration_hours} hour{data.duration_hours !== 1 ? 's' : ''}</p>
+                                {validDate ? (
+                                    <>
+                                        <p className="text-sm font-bold text-zinc-900">{formattedDate}</p>
+                                        <p className="text-sm text-zinc-500">
+                                            {formattedTime}
+                                            {validDuration && ` • ${data.duration_hours} hour${data.duration_hours !== 1 ? 's' : ''}`}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <p className="text-sm font-bold text-zinc-900">Date to be confirmed</p>
+                                )}
                             </div>
                         </div>
 
                         {/* Location */}
+                        {data.location && (
                         <div className="flex gap-4 items-start">
                             <div className="p-3 rounded-2xl bg-zinc-100/80 text-zinc-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -99,8 +117,10 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({ data }) => {
                                 <p className="text-sm font-semibold text-zinc-800">{data.location}</p>
                             </div>
                         </div>
+                        )}
 
                         {/* Recipient */}
+                        {data.recipient_email && (
                         <div className="flex gap-4 items-start">
                             <div className="p-3 rounded-2xl bg-zinc-100/80 text-zinc-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -112,6 +132,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({ data }) => {
                                 <p className="text-sm font-semibold text-zinc-800">{data.recipient_email}</p>
                             </div>
                         </div>
+                        )}
 
                         {/* Description */}
                         {data.description && (

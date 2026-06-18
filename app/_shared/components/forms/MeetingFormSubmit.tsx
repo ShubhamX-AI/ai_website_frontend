@@ -8,6 +8,8 @@ interface MeetingFormSubmitProps {
 }
 
 export const MeetingFormSubmit: React.FC<MeetingFormSubmitProps> = ({ data }) => {
+    const dt = data.start_time ? new Date(data.start_time) : null;
+    const validDate = dt !== null && !isNaN(dt.getTime());
     return (
         <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -55,7 +57,7 @@ export const MeetingFormSubmit: React.FC<MeetingFormSubmitProps> = ({ data }) =>
                         Meeting Scheduled!
                     </h3>
                     <p className="text-sm text-zinc-500 font-medium leading-relaxed max-w-[200px] mx-auto">
-                        Calendar invite sent successfully to {data.recipient_email}.
+                        Calendar invite sent successfully{data.recipient_email ? ` to ${data.recipient_email}` : ' to your calendar'}.
                     </p>
                 </motion.div>
 
@@ -73,16 +75,18 @@ export const MeetingFormSubmit: React.FC<MeetingFormSubmitProps> = ({ data }) =>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                             </span>
-                            <span className="text-xs font-semibold text-zinc-700 truncate">{data.subject}</span>
+                            <span className="text-xs font-semibold text-zinc-700 truncate">{data.subject || 'Meeting'}</span>
                         </div>
+                        {validDate && (
                         <div className="flex items-center gap-2.5">
                             <span className="p-1.5 rounded-full bg-green-100 text-green-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </span>
-                            <span className="text-xs font-semibold text-zinc-700 truncate">{new Date(data.start_time).toLocaleString()}</span>
+                            <span className="text-xs font-semibold text-zinc-700 truncate">{dt!.toLocaleString()}</span>
                         </div>
+                        )}
                     </div>
                 </motion.div>
 
