@@ -76,7 +76,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({ data }) => {
                     <div className="space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-widest text-blue-600/80">Calendar Invite</span>
                         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900 leading-tight">
-                            {data.subject || '(No subject)'}
+                            {data.subject}
                         </h2>
                     </div>
 
@@ -104,7 +104,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({ data }) => {
                         </div>
 
                         {/* Location */}
-                        {data.location && (
                         <div className="flex gap-4 items-start">
                             <div className="p-3 rounded-2xl bg-zinc-100/80 text-zinc-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,10 +116,8 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({ data }) => {
                                 <p className="text-sm font-semibold text-zinc-800">{data.location}</p>
                             </div>
                         </div>
-                        )}
 
                         {/* Recipient */}
-                        {data.recipient_email && (
                         <div className="flex gap-4 items-start">
                             <div className="p-3 rounded-2xl bg-zinc-100/80 text-zinc-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,7 +129,6 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({ data }) => {
                                 <p className="text-sm font-semibold text-zinc-800">{data.recipient_email}</p>
                             </div>
                         </div>
-                        )}
 
                         {/* Description */}
                         {data.description && (

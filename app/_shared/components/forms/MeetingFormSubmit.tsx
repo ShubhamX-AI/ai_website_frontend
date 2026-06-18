@@ -57,7 +57,7 @@ export const MeetingFormSubmit: React.FC<MeetingFormSubmitProps> = ({ data }) =>
                         Meeting Scheduled!
                     </h3>
                     <p className="text-sm text-zinc-500 font-medium leading-relaxed max-w-[200px] mx-auto">
-                        Calendar invite sent successfully{data.recipient_email ? ` to ${data.recipient_email}` : ' to your calendar'}.
+                        Calendar invite sent successfully to {data.recipient_email}.
                     </p>
                 </motion.div>
 
@@ -75,7 +75,7 @@ export const MeetingFormSubmit: React.FC<MeetingFormSubmitProps> = ({ data }) =>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                             </span>
-                            <span className="text-xs font-semibold text-zinc-700 truncate">{data.subject || '(No subject)'}</span>
+                            <span className="text-xs font-semibold text-zinc-700 truncate">{data.subject}</span>
                         </div>
                         {validDate && (
                         <div className="flex items-center gap-2.5">

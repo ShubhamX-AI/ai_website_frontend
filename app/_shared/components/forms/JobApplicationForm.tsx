@@ -110,15 +110,13 @@ export const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ data, up
 
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Static Info Display — only when agent supplied a position */}
-                            {formData.job_details && (
+                            {/* Static Info Display */}
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-zinc-400 ml-1 uppercase tracking-wide">Applying For</label>
                                 <div className="w-full bg-zinc-50/80 border border-zinc-200/50 rounded-2xl px-5 py-3.5 text-sm text-zinc-700 font-semibold shadow-sm italic">
                                     {formData.job_details}
                                 </div>
                             </div>
-                            )}
 
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-zinc-500 ml-1 uppercase tracking-wide">Full Name</label>
