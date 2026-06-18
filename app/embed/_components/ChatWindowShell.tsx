@@ -193,7 +193,7 @@ export const ChatWindowShell: React.FC<ChatWindowShellProps> = ({
                                 // Fluid: fill the iframe (the host sized it to the dragged size).
                                 // inset-6 mirrors the existing 24px bottom/right offset on all sides.
                                 ? "fixed z-50 flex flex-col overflow-hidden inset-6 rounded-[28px] bg-gradient-to-b from-white/70 via-sky-50/65 to-sky-100/80 backdrop-blur-2xl ring-1 ring-white/60 shadow-[0_28px_80px_-12px_rgba(15,23,42,0.28)]"
-                                : "fixed z-50 flex flex-col overflow-hidden bottom-6 right-6 h-[720px] w-[480px] max-h-[calc(100dvh-3rem)] rounded-[28px] bg-gradient-to-b from-white/70 via-sky-50/65 to-sky-100/80 backdrop-blur-2xl ring-1 ring-white/60 shadow-[0_28px_80px_-12px_rgba(15,23,42,0.28)]"
+                                : "fixed z-50 flex flex-col overflow-hidden bottom-6 right-6 h-[768px] w-[544px] max-h-[calc(100dvh-3rem)] rounded-[28px] bg-gradient-to-b from-white/70 via-sky-50/65 to-sky-100/80 backdrop-blur-2xl ring-1 ring-white/60 shadow-[0_28px_80px_-12px_rgba(15,23,42,0.28)]"
                         }
                     >
                         {/* Top-left resize handle — drag to freely size the window (desktop).
@@ -208,9 +208,11 @@ export const ChatWindowShell: React.FC<ChatWindowShellProps> = ({
                                 style={{ touchAction: "none" }}
                                 aria-label="Resize window"
                                 title="Drag to resize"
-                                className="group/resize absolute left-0 top-0 z-40 flex h-6 w-6 cursor-nwse-resize items-start justify-start rounded-tl-[28px] p-1.5"
+                                className="group/resize absolute left-0 top-0 z-40 flex h-8 w-8 cursor-nwse-resize items-start justify-start rounded-tl-[28px] p-2"
                             >
-                                <svg viewBox="0 0 16 16" className="h-3 w-3 text-blue-600/40 transition-colors group-hover/resize:text-blue-600/80" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
+                                {/* Frosted backing — fades up on hover so the grip reads as grab-able. */}
+                                <span className="pointer-events-none absolute left-0 top-0 h-full w-full rounded-tl-[28px] rounded-br-xl bg-white/0 backdrop-blur-[2px] transition-colors group-hover/resize:bg-white/40" />
+                                <svg viewBox="0 0 16 16" className="relative h-3.5 w-3.5 text-blue-600/55 transition-colors group-hover/resize:text-blue-600/90" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
                                     <path d="M2 8L8 2M2 13L13 2" />
                                 </svg>
                             </button>

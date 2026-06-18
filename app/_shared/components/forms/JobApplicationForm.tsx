@@ -100,7 +100,7 @@ export const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ data, up
                 </div>
 
                 {/* Form Side */}
-                <div className="w-full md:w-[65%] p-8 md:p-12 flex flex-col justify-center">
+                <div className="w-full md:w-[65%] p-8 md:p-12 flex flex-col justify-center md-stagger">
                     <div className="mb-8">
                         <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600/80">Job Application</span>
                         <h2 className="text-3xl font-bold tracking-tight text-zinc-900 mt-1">

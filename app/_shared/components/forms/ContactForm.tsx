@@ -48,7 +48,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ data }) => {
                 </div>
 
                 {/* Right Side: Form Fields */}
-                <div className="w-full md:w-[60%] p-8 md:p-12 space-y-8 flex flex-col justify-center">
+                <div className="w-full md:w-[60%] p-8 md:p-12 space-y-8 flex flex-col justify-center md-stagger">
                     <div className="space-y-1">
                         <span className="text-[10px] font-black uppercase tracking-widest text-blue-600/80">Contact Us</span>
                         <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-zinc-900">

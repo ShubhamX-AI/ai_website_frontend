@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, PanInfo } from 'framer-motion';
-import { SPRING } from '../designTokens';
+import { SPRING_SETTLE } from '../designTokens';
 
 interface CardCarouselProps {
     /** One card per child. */
@@ -15,7 +15,7 @@ interface CardCarouselProps {
 }
 
 // How long the active card rests before the carousel auto-advances one step.
-const AUTO_MS = 6000;
+const AUTO_MS = 4000;
 
 /**
  * CardCarousel — a single-card slide carousel.
@@ -114,7 +114,7 @@ export const CardCarousel: React.FC<CardCarouselProps> = ({
             <motion.div
                 className="relative w-full overflow-hidden"
                 animate={{ height: activeHeight }}
-                transition={SPRING}
+                transition={SPRING_SETTLE}
             >
                 {slides.map((slide, i) => {
                     const isActive = i === index;
@@ -125,7 +125,7 @@ export const CardCarousel: React.FC<CardCarouselProps> = ({
                             className={`absolute inset-x-0 top-0 w-full ${isActive ? '' : 'pointer-events-none'}`}
                             style={{ zIndex: isActive ? 10 : 0 }}
                             animate={{ x: `${(i - index) * 100}%`, opacity: isActive ? 1 : 0 }}
-                            transition={SPRING}
+                            transition={SPRING_SETTLE}
                             drag={isActive ? 'x' : false}
                             dragConstraints={{ left: 0, right: 0 }}
                             dragElastic={0.18}

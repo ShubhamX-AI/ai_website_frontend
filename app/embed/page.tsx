@@ -24,8 +24,8 @@ import { ChatWindowShell } from "./_components/ChatWindowShell";
 const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || "";
 
 // Card width the loader sizes the iframe around (px). Must match the shell's
-// w-[480px] class. Mobile ignores this and goes full-screen.
-const WIDTH_DEFAULT = 480;
+// w-[544px] class. Mobile ignores this and goes full-screen.
+const WIDTH_DEFAULT = 544;
 
 // Tell the host loader how big the iframe should be. Safe no-op when opened
 // directly (not embedded) — the message just goes to our own window.

@@ -22,3 +22,7 @@ export const SPRING: Transition = { type: 'spring', stiffness: 300, damping: 32,
 
 // A softer spring for content reveals inside a card (staggered blocks).
 export const SPRING_SOFT: Transition = { type: 'spring', stiffness: 200, damping: 24 };
+
+// Gentle overshoot-and-settle (damping ratio ~0.72) for card slides — Apple-style.
+// Tuning knob: drop damping for more overshoot, raise for less.
+export const SPRING_SETTLE: Transition = { type: 'spring', stiffness: 260, damping: 22, mass: 0.9 };

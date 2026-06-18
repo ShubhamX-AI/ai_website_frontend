@@ -48,10 +48,10 @@
         height: "150px",
     };
 
-    // Card geometry (keep in sync with /embed): the card is h-[720px], offset
+    // Card geometry (keep in sync with /embed): the card is h-[768px], offset
     // bottom-6/right-6 (24px). BUFFER covers that offset plus the drop shadow so
     // the iframe box never clips the card.
-    var CARD_HEIGHT = 720;
+    var CARD_HEIGHT = 768;
     var CARD_BUFFER = 96;
 
     // Free drag-resize: minimum usable iframe box (header + dock + one card). Max is
@@ -94,7 +94,7 @@
         var origin = resolveOrigin(opts, scriptEl);
         // `free` = the current drag-resized iframe-box size {w,h} for this open session,
         // or null (use presets). Reset to null on collapse so each open is the preset.
-        var state = { mode: "collapsed", width: 480, free: null };
+        var state = { mode: "collapsed", width: 544, free: null };
 
         var iframe = document.createElement("iframe");
         iframe.src = origin + "/embed";
@@ -141,7 +141,7 @@
             }
             // Bottom-right popup card on tablet/desktop — only the corner is covered,
             // the rest of the host page stays clickable.
-            var w = Math.min((width || 480) + CARD_BUFFER, window.innerWidth);
+            var w = Math.min((width || 544) + CARD_BUFFER, window.innerWidth);
             var h = Math.min(CARD_HEIGHT + CARD_BUFFER, window.innerHeight);
             s.top = "auto";
             s.left = "auto";
@@ -178,7 +178,7 @@
             if (!iframe.contentWindow) return;
             iframe.contentWindow.postMessage(
                 // freeSize lets /embed switch to the fluid card immediately on open, so
-                // it never flashes the 480px preset before the host applies the saved box.
+                // it never flashes the 544px preset before the host applies the saved box.
                 { type: "vani:host", isMobile: isMobile(), freeSize: state.free || null },
                 origin
             );
